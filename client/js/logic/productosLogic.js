@@ -13,10 +13,30 @@ function badgeDisponibilidad(p){
 }
 
 function coloresDisponibles(p){
-  if(!p.colores?.length) return "";
-  return p.colores
-    .map(c => `<span class="badge ${c.disponible ? 'ok' : 'soon'}">${c.color}</span>`)
-    .join(" ");
+  // Manejar diferentes formatos de colores
+  let colores = [];
+  
+  try {
+    if (!p.colores) return "";
+    
+    // Si es un string JSON, parsearlo
+    if (typeof p.colores === 'string') {
+      colores = JSON.parse(p.colores);
+    } 
+    // Si ya es un array, usarlo directamente
+    else if (Array.isArray(p.colores)) {
+      colores = p.colores;
+    }
+    
+    if (!colores.length) return "";
+    
+    return colores
+      .map(c => `<span class="badge ${c.disponible ? 'ok' : 'soon'}">${c.color}</span>`)
+      .join(" ");
+  } catch (error) {
+    console.warn("Error parseando colores:", error);
+    return "";
+  }
 }
 
 function cardProducto(p){
