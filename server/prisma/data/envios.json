@@ -1,0 +1,8 @@
+[
+  {
+    "id": "ENV-001",
+    "pedidoId": "PED-001",
+    "costo": 5.99,
+    "estado": "pendiente"
+  }
+]

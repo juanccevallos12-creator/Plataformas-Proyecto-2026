@@ -1,0 +1,12 @@
+[
+  {
+    "id": "PAIS-EC",
+    "nombre": "Ecuador",
+    "codigo": "EC"
+  },
+  {
+    "id": "PAIS-USA",
+    "nombre": "Estados Unidos",
+    "codigo": "USA"
+  }
+]

@@ -1,0 +1,11 @@
+[
+  {
+    "id": "MOV-001",
+    "tipo": "entrada",
+    "bodegaId": "BOD-1",
+    "productoId": "PROD-001",
+    "cantidad": 50,
+    "motivo": "Compra a proveedor",
+    "fecha": "2026-01-03T22:16:37.855Z"
+  }
+]

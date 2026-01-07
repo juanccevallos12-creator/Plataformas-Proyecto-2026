@@ -1,0 +1,22 @@
+[
+  {
+    "id": "PED-1765458861465-9v94zc8",
+    "usuarioId": "usuario-guest",
+    "items": [
+      {
+        "productoId": "LT-ROG-16-001",
+        "cantidad": 1,
+        "precioUnitario": 1899.99
+      },
+      {
+        "productoId": "LT-MBP-14-002",
+        "cantidad": 1,
+        "precioUnitario": 2399
+      }
+    ],
+    "total": 4298.99,
+    "estado": "pendiente",
+    "fecha": "2025-12-11T13:14:21.465Z",
+    "createdAt": "2025-12-11T13:14:21.465Z"
+  }
+]

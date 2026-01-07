@@ -1,0 +1,32 @@
+[
+  {
+    "id": "USR-001",
+    "nombre": "Carlos Méndez",
+    "email": "admin@neweratech.com",
+    "password": "admin123",
+    "rol": "admin",
+    "permisos": ["crear", "editar", "eliminar", "ver"],
+    "activo": true,
+    "createdAt": "2025-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "USR-002",
+    "nombre": "María Torres",
+    "email": "vendedor@neweratech.com",
+    "password": "vendedor123",
+    "rol": "vendedor",
+    "permisos": ["ver"],
+    "activo": true,
+    "createdAt": "2025-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "USR-003",
+    "nombre": "Juan Pérez",
+    "email": "cliente@gmail.com",
+    "password": "cliente123",
+    "rol": "cliente",
+    "permisos": ["ver"],
+    "activo": true,
+    "createdAt": "2025-01-01T00:00:00.000Z"
+  }
+]

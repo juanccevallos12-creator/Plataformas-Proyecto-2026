@@ -1,0 +1,12 @@
+[
+  {
+    "id": "OC-001",
+    "numero": "OC-2024-001",
+    "proveedorId": "PROV-1",
+    "subtotal": 4000,
+    "iva": 600,
+    "total": 4600,
+    "estado": "pendiente",
+    "fecha": "2026-01-03T22:16:37.394Z"
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "PAG-001",
+    "pedidoId": "PED-001",
+    "facturaId": "FACT-001",
+    "monto": 115,
+    "formaPago": "tarjeta",
+    "estado": "aprobado",
+    "referencia": "REF-2024-001",
+    "fechaPago": "2026-01-03T22:16:34.721Z"
+  }
+]

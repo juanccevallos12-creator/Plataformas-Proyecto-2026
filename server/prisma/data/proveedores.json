@@ -1,0 +1,16 @@
+[
+  {
+    "id": "PROV-1",
+    "nombre": "Proveedor Principal",
+    "email": "prov1@mail.com",
+    "activo": true
+  },
+  {
+    "id": "PROV-2",
+    "nombre": "Dell Inc",
+    "ruc": "1708186216001",
+    "email": "ventasecuador@dell.com",
+    "telefono": "3132867",
+    "activo": true
+  }
+]

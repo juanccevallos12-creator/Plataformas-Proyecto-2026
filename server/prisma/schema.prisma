@@ -1,0 +1,366 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id        String    @id @default(cuid())
+  nombre    String
+  email     String    @unique
+  password  String
+  rol       String?   @default("cliente")
+  permisos  String[]  @default(["ver"])
+  activo    Boolean?  @default(true)
+  telefono  String?
+  direccion String?
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  carrito   Carrito[]
+  pedidos   Pedido[]
+
+  @@index([email], map: "idx_usuarios_email")
+  @@map("usuarios")
+}
+
+model Cliente {
+  id           String    @id @default(cuid())
+  nombre       String
+  email        String?
+  telefono     String?
+  direccion    String?
+  ciudad       String?
+  pais         String?
+  tipo_cliente String?
+  activo       Boolean?  @default(true)
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updated_at   DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([email], map: "idx_clientes_email")
+  @@map("clientes")
+}
+
+model Ubicacion {
+  id        String    @id @default(cuid())
+  nombre    String
+  direccion String?
+  ciudad_id String?
+  tipo      String?
+  activo    Boolean?  @default(true)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@map("ubicaciones")
+}
+
+model Categoria {
+  id          String    @id @default(cuid())
+  nombre      String    @unique
+  descripcion String?
+  activo      Boolean?  @default(true)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@map("categorias")
+}
+
+model Producto {
+  id          String    @id @default(cuid())
+  nombre      String
+  descripcion String?
+  precio      Decimal   @db.Decimal(10, 2)
+  stock       Int?      @default(0)
+  imagen      String?
+  categoria   String?
+  activo      Boolean?  @default(true)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  carrito     Carrito[]
+
+  @@index([categoria], map: "idx_productos_categoria")
+  @@map("productos")
+}
+
+model Pedido {
+  id          String       @id
+  usuarioId   String?      @map("usuario_id")
+  total       Decimal      @db.Decimal(10, 2)
+  estado      String?      @default("pendiente")
+  direccion   String?
+  telefono    String?
+  items       Json?
+  createdAt   DateTime?    @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime?    @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  pedidoItems PedidoItem[]
+  usuario     Usuario?     @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([usuarioId], map: "idx_pedidos_usuario")
+  @@map("pedidos")
+}
+
+model PedidoItem {
+  id          String    @id
+  pedidoId    String    @map("pedido_id")
+  productoId  String?   @map("producto_id")
+  nombre      String
+  descripcion String?
+  precio      Decimal   @db.Decimal(10, 2)
+  cantidad    Int
+  subtotal    Decimal   @db.Decimal(10, 2)
+  imagen      String?
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  pedido      Pedido    @relation(fields: [pedidoId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_pedido")
+
+  @@index([pedidoId], map: "idx_pedido_items_pedido")
+  @@index([productoId], map: "idx_pedido_items_producto")
+  @@map("pedido_items")
+}
+
+model Factura {
+  id             String    @id @default(cuid())
+  pedidoId       String?   @map("pedido_id")
+  cliente_id     String?
+  numero_factura String?   @unique
+  fecha_emision  DateTime? @default(now()) @db.Timestamp(6)
+  subtotal       Decimal?  @db.Decimal(10, 2)
+  impuestos      Decimal?  @db.Decimal(10, 2)
+  total          Decimal?  @db.Decimal(10, 2)
+  estado         String?   @default("emitida")
+  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([pedidoId], map: "idx_facturas_pedido")
+  @@map("facturas")
+}
+
+model Pago {
+  id            String    @id @default(cuid())
+  factura_id    String?
+  pedidoId      String?   @map("pedido_id")
+  monto         Decimal   @db.Decimal(10, 2)
+  forma_pago_id String?
+  fecha_pago    DateTime? @default(now()) @db.Timestamp(6)
+  estado        String?   @default("completado")
+  referencia    String?
+  createdAt     DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([factura_id], map: "idx_pagos_factura")
+  @@map("pagos")
+}
+
+model Envio {
+  id                 String    @id @default(cuid())
+  pedidoId           String?   @map("pedido_id")
+  direccion          String
+  ciudad             String?
+  codigo_postal      String?
+  transportista      String?
+  numero_seguimiento String?
+  fecha_envio        DateTime? @db.Timestamp(6)
+  fecha_entrega      DateTime? @db.Timestamp(6)
+  estado             String?   @default("pendiente")
+  createdAt          DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updated_at         DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([pedidoId], map: "idx_envios_pedido")
+  @@map("envios")
+}
+
+model Descuento {
+  id           String    @id @default(cuid())
+  codigo       String?   @unique
+  descripcion  String?
+  tipo         String?
+  valor        Decimal?  @db.Decimal(10, 2)
+  porcentaje   Decimal?  @db.Decimal(5, 2)
+  fecha_inicio DateTime? @db.Timestamp(6)
+  fecha_fin    DateTime? @db.Timestamp(6)
+  activo       Boolean?  @default(true)
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@map("descuentos")
+}
+
+model Carrito {
+  id         String    @id @default(cuid())
+  usuarioId  String?   @map("usuario_id")
+  productoId String?   @map("producto_id")
+  cantidad   Int
+  productos  Producto? @relation(fields: [productoId], references: [id])
+  usuarios   Usuario?  @relation(fields: [usuarioId], references: [id])
+
+  @@unique([usuarioId, productoId], name: "usuario_producto_unique")
+  @@map("carrito")
+}
+
+model Contacto {
+  id        String    @id @default(cuid())
+  nombre    String
+  email     String
+  mensaje   String
+  leido     Boolean?  @default(false)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@map("contactos")
+}
+
+model Bodega {
+  id           String    @id @default(cuid())
+  nombre       String
+  ubicacion    String?
+  capacidad    Int?
+  stock_actual Int?      @default(0)
+  activo       Boolean?  @default(true)
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updated_at   DateTime? @default(now()) @db.Timestamp(6)
+
+  @@map("bodega")
+}
+
+model Proveedor {
+  id         String    @id @default(cuid())
+  nombre     String
+  contacto   String?
+  email      String?
+  telefono   String?
+  direccion  String?
+  activo     Boolean?  @default(true)
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+
+  @@map("proveedores")
+}
+
+model OrdenCompra {
+  id            String    @id @default(cuid())
+  proveedorId   String?   @map("proveedor_id")
+  fecha_orden   DateTime? @db.Timestamp(6)
+  fecha_entrega DateTime? @db.Timestamp(6)
+  total         Decimal?  @db.Decimal(10, 2)
+  estado        String?   @default("pendiente")
+  items         Json?
+  createdAt     DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+
+  @@map("ordenes_compra")
+}
+
+model Movimiento {
+  id          String    @id @default(cuid())
+  tipo        String
+  productoId  String?   @map("producto_id")
+  cantidad    Int
+  bodegaId    String?   @map("bodega_id")
+  usuario_id  String?
+  descripcion String?
+  fecha       DateTime? @default(now()) @db.Timestamp(6)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([productoId], map: "idx_movimientos_producto")
+  @@map("movimientos")
+}
+
+model Pais {
+  id        String    @id @default(cuid())
+  nombre    String
+  codigo    String?
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@map("paises")
+}
+
+model Ciudad {
+  id            String    @id @default(cuid())
+  nombre        String
+  paisId        String?   @map("pais_id")
+  codigo_postal String?
+  createdAt     DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@map("ciudades")
+}
+
+model Rol {
+  id          String    @id @default(cuid())
+  nombre      String    @unique
+  descripcion String?
+  permisos    String[]
+  activo      Boolean?  @default(true)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@map("roles")
+}
+
+model Estado {
+  id          String    @id @default(cuid())
+  nombre      String
+  tipo        String?
+  descripcion String?
+  color       String?
+  activo      Boolean?  @default(true)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@map("estados")
+}
+
+model FormaPago {
+  id                    String    @id @default(cuid())
+  nombre                String
+  descripcion           String?
+  requiere_autorizacion Boolean?  @default(false)
+  activo                Boolean?  @default(true)
+  createdAt             DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@map("forma_pago")
+}
+
+model UnidadMedida {
+  id          String    @id @default(cuid())
+  nombre      String
+  abreviatura String?
+  tipo        String?
+  activo      Boolean?  @default(true)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@map("unidades_medidas")
+}
+
+model Ajuste {
+  id          String    @id @default(cuid())
+  clave       String    @unique
+  valor       String?
+  tipo        String?
+  descripcion String?
+  categoria   String?
+  updated_at  DateTime? @default(now()) @db.Timestamp(6)
+
+  @@map("ajustes")
+}
+
+model bitacora_operaciones {
+  id               String    @id
+  usuario_id       String?
+  accion           String
+  tabla            String?
+  registro_id      String?
+  datos_anteriores Json?
+  datos_nuevos     Json?
+  ip               String?
+  user_agent       String?
+  fecha            DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([fecha], map: "idx_bitacora_fecha")
+  @@index([usuario_id], map: "idx_bitacora_usuario")
+}
+
+model generic_data {
+  id              String    @id
+  collection_name String
+  data            Json
+  created_at      DateTime? @default(now()) @db.Timestamp(6)
+  updated_at      DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([collection_name], map: "idx_collection_name")
+  @@index([data], map: "idx_data_gin", type: Gin)
+  @@index([collection_name], map: "idx_generic_collection")
+  @@index([data], map: "idx_generic_data_gin", type: Gin)
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "CAT-001",
+    "nombre": "Laptops",
+    "activo": true
+  },
+  {
+    "id": "CAT-002",
+    "nombre": "Accesorios",
+    "activo": true
+  }
+]

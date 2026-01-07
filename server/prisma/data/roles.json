@@ -1,0 +1,24 @@
+[
+  {
+    "id": "ROL-ADMIN",
+    "nombre": "Administrador",
+    "descripcion": "Acceso total",
+    "permisos": ["*"],
+    "activo": true
+  },
+  {
+    "id": "ROL-VENDEDOR",
+    "nombre": "Vendedor",
+    "descripcion": "Gestión de ventas",
+    "permisos": ["ventas", "productos"],
+    "activo": true
+  },
+  {
+    "id": "ROL-CLIENTE",
+    "nombre": "Cliente",
+    "descripcion": "Usuario comprador",
+    "permisos": ["comprar"],
+    "activo": true
+  }
+]
+

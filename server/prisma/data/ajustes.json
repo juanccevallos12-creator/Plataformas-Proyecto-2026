@@ -1,0 +1,20 @@
+[
+  {
+    "id": "AJU-001",
+    "clave": "IVA_POR_DEFECTO",
+    "valor": "15",
+    "descripcion": "IVA estándar Ecuador",
+    "activo": true,
+    "createdAt": "2026-01-03T22:09:10.000Z",
+    "updatedAt": "2026-01-03T22:09:10.000Z"
+  },
+  {
+    "id": "AJU-002",
+    "clave": "MONEDA",
+    "valor": "USD",
+    "descripcion": "Moneda del sistema",
+    "activo": true,
+    "createdAt": "2026-01-03T22:09:10.000Z",
+    "updatedAt": "2026-01-03T22:09:10.000Z"
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "UBI-001",
+    "clienteId": "USR-003",
+    "tipo": "entrega",
+    "nombre": "Casa",
+    "direccion": "Av. Principal 123",
+    "ciudad": "Quito",
+    "provincia": "Pichincha",
+    "codigoPostal": "170101",
+    "predeterminada": true,
+    "activa": true
+  }
+]

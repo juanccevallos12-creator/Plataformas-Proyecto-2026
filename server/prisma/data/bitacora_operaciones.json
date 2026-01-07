@@ -1,0 +1,18 @@
+[
+  {
+    "id": "BIT-001",
+    "usuarioId": "USR-001",
+    "accion": "LOGIN",
+    "descripcion": "Inicio de sesión exitoso",
+    "ip": "127.0.0.1",
+    "fecha": "2026-01-03T22:15:00.000Z"
+  },
+  {
+    "id": "BIT-002",
+    "usuarioId": "USR-001",
+    "accion": "CREAR_PRODUCTO",
+    "descripcion": "Registro de producto PROD-001",
+    "ip": "127.0.0.1",
+    "fecha": "2026-01-03T22:16:00.000Z"
+  }
+]

@@ -1,0 +1,9 @@
+[
+  {
+    "id": "PITEM-001",
+    "pedidoId": "PED-001",
+    "productoId": "PROD-001",
+    "cantidad": 3,
+    "precio": 1399
+  }
+]

@@ -1,0 +1,23 @@
+[
+  {
+    "id": "UM-UNIDAD",
+    "nombre": "Unidad",
+    "simbolo": "u",
+    "tipo": "unidad",
+    "activo": true
+  },
+  {
+    "id": "UM-KG",
+    "nombre": "Kilogramo",
+    "simbolo": "kg",
+    "tipo": "peso",
+    "activo": true
+  },
+  {
+    "id": "UM-L",
+    "nombre": "Litro",
+    "simbolo": "L",
+    "tipo": "volumen",
+    "activo": true
+  }
+]
