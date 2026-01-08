@@ -23,7 +23,7 @@ function cardProducto(p){
         <p>${p.resena}</p>
         <p>${badgeDisponibilidad(p)} &nbsp; ${coloresDisponibles(p)}</p>
         <p style="margin:.4rem 0 0 0; font-size:.85rem">
-          ${p.specs.slice(0,3).join(" · ")}
+          ${Array.isArray(p.specs) ? p.specs.slice(0,3).join(" · ") : ""}
         </p>
 
         <div class="cta" style="margin-top:.6rem">
@@ -51,29 +51,63 @@ function badgeDisponibilidad(p){
 }
 
 function coloresDisponibles(p){
-  if(!p.colores?.length) return "";
-  return p.colores
-    .map(c => `<span class="badge ${c.disponible ? 'ok' : 'soon'}">${c.color}</span>`)
-    .join(" ");
+  // Manejar diferentes formatos de colores
+  let colores = [];
+  
+  try {
+    if (!p.colores) return "";
+    
+    // Si es un string JSON, parsearlo
+    if (typeof p.colores === 'string') {
+      colores = JSON.parse(p.colores);
+    } 
+    // Si ya es un array, usarlo directamente
+    else if (Array.isArray(p.colores)) {
+      colores = p.colores;
+    }
+    
+    if (!colores.length) return "";
+    
+    return colores
+      .map(c => `<span class="badge ${c.disponible ? 'ok' : 'soon'}">${c.color}</span>`)
+      .join(" ");
+  } catch (error) {
+    console.warn("Error parseando colores:", error);
+    return "";
+  }
 }
-
 
 // ---------------------
 //   RENDER DESTACADOS
 // ---------------------
 export async function renderHome(){
-
+  console.log("🏠 Iniciando renderHome...");
+  
   const grid = $("#grid-destacados");
-  if(!grid) return;
+  if(!grid) {
+    console.error("❌ No se encontró #grid-destacados");
+    return;
+  }
 
   grid.innerHTML = "<li>Cargando...</li>";
 
   try{
+    console.log("📡 Llamando a getProductos()...");
     const response = await getProductos();
+    console.log("✅ Respuesta recibida:", response);
+    
     const data = response.data || response;
+    console.log("📦 Datos procesados:", data);
+    
+    if (!Array.isArray(data)) {
+      throw new Error("Los datos no son un array");
+    }
+    
     const destacados = data.slice(0, 6);
+    console.log("⭐ Destacados seleccionados:", destacados.length);
 
     grid.innerHTML = destacados.map(cardProducto).join("");
+    console.log("✅ Destacados renderizados");
 
     //-------------------------------
     // Delegación de eventos
@@ -118,7 +152,7 @@ export async function renderHome(){
           <p style="margin-top:.6rem">${prod.resena}</p>
 
           <ul style="margin:.4rem 0 0 1rem;font-size:.9rem">
-            ${prod.specs.map(s=>`<li>${s}</li>`).join("")}
+            ${(prod.specs || []).map(s=>`<li>${s}</li>`).join("")}
           </ul>
         `;
 
@@ -145,7 +179,7 @@ export async function renderHome(){
     });
 
   } catch (e) {
-    grid.innerHTML = "<li>Error cargando destacados.</li>";
+    console.error("❌ ERROR en renderHome:", e);
+    grid.innerHTML = `<li>Error cargando destacados: ${e.message}</li>`;
   }
-
 }

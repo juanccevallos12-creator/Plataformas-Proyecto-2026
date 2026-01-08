@@ -1,10 +1,8 @@
-// client/js/logic/adminLogic.js
-// Lógica genérica para administrar las 24 colecciones
-
 import { COLLECTIONS } from "../config/collections.js";
+import { API_URL } from "../api/config.js";
 import { $, showToast } from "../utils.js";
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = `${API_URL}/api`;
 
 let currentCollection = 'productos';
 let dataCache = [];
@@ -74,6 +72,8 @@ async function fetchData() {
   tbody.innerHTML = '<tr><td colspan="10" style="text-align:center">Cargando...</td></tr>';
 
   try {
+    console.log(`📡 Cargando ${config.endpoint} desde ${API_BASE}/${config.endpoint}`);
+    
     const response = await fetch(`${API_BASE}/${config.endpoint}`, {
       headers: getAuthHeaders()
     });
@@ -90,13 +90,14 @@ async function fetchData() {
     }
     
     const result = await response.json();
+    console.log(`✅ Datos recibidos:`, result);
     dataCache = result.data || [];
     
     renderTable();
     renderStats();
     
   } catch (error) {
-    console.error('Error cargando datos:', error);
+    console.error('❌ Error cargando datos:', error);
     tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:#ef4444;">Error al cargar datos</td></tr>';
     showToast('❌ Error al cargar datos');
   }
