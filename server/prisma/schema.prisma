@@ -364,3 +364,27 @@ model generic_data {
   @@index([collection_name], map: "idx_generic_collection")
   @@index([data], map: "idx_generic_data_gin", type: Gin)
 }
+
+model Marca {
+  id          String   @id @default(cuid())
+  nombre      String   @unique
+  descripcion String?
+  logo        String?
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("marcas")
+}
+
+model Moneda {
+  id        String   @id @default(cuid())
+  codigo    String   @unique
+  nombre    String
+  simbolo   String
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("monedas")
+}

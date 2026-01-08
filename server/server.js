@@ -18,6 +18,8 @@ import pagosRoutes from './routes/pagos.routes.js';
 import pedidosRoutes from './routes/pedidos.routes.js';
 import productosRoutes from './routes/productos.routes.js';
 import usuariosRoutes from './routes/usuarios.routes.js';
+import marcasRoutes from './routes/marcas.routes.js';
+import monedasRoutes from './routes/monedas.routes.js';
 
 // ============================================================
 //                      IMPORTAR CONTROLADORES GENÉRICOS
@@ -160,6 +162,8 @@ app.use('/api/images', imagesRoutes);
 // Rutas específicas que tienen lógica especial
 app.use('/api/envios', enviosRoutes);
 app.use('/api/pagos', pagosRoutes);
+app.use('/api/marcas', marcasRoutes);      
+app.use('/api/monedas', monedasRoutes);
 
 // ============================================================
 //                    REGISTRAR RUTAS GENÉRICAS
