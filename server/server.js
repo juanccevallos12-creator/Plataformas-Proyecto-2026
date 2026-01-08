@@ -53,9 +53,31 @@ const PORT = process.env.PORT || 3000;
 // ============================================================
 //                      MIDDLEWARES
 // ============================================================
+
+// ✅ CONFIGURACIÓN CORS MEJORADA
+const allowedOrigins = [
+  'http://localhost:5500',
+  'http://127.0.0.1:5500',
+  'http://localhost:3000',
+  'https://celadon-stardust-45ddf1.netlify.app',
+  process.env.FRONTEND_URL
+].filter(Boolean); // Elimina valores undefined
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://127.0.0.1:5500',
-  credentials: true
+  origin: function(origin, callback) {
+    // Permitir requests sin origin (como mobile apps, Postman, curl)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn('⚠️ Origen bloqueado por CORS:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json({ limit: '50mb' }));
@@ -247,6 +269,8 @@ async function startServer() {
       console.log(`   ✅ 15 rutas genéricas (CRUD automático)`);
       console.log(`   ✅ Total: 26 endpoints activos`);
       console.log(`\n💡 Modo: ${process.env.NODE_ENV || 'production'}`);
+      console.log(`\n🌐 Orígenes CORS permitidos:`);
+      allowedOrigins.forEach(origin => console.log(`   ✅ ${origin}`));
       console.log(`\n🔗 Visita http://localhost:${PORT}/ para ver todas las rutas\n`);
     });
   } catch (error) {
