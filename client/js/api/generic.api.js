@@ -5,14 +5,9 @@ const API_BASE = `${API_URL}/api`;
 
 /**
  * Crea funciones CRUD para una colección específica
- * @param {string} endpoint - Nombre del endpoint (ej: 'categorias', 'clientes')
- * @returns {object} Objeto con funciones CRUD
  */
 export function createAPI(endpoint) {
   return {
-    /**
-     * Obtener todos los registros
-     */
     async getAll() {
       try {
         const response = await fetch(`${API_BASE}/${endpoint}`);
@@ -28,10 +23,6 @@ export function createAPI(endpoint) {
       }
     },
 
-    /**
-     * Obtener un registro por ID
-     * @param {string} id - ID del registro
-     */
     async getById(id) {
       try {
         const response = await fetch(`${API_BASE}/${endpoint}/${id}`);
@@ -47,10 +38,6 @@ export function createAPI(endpoint) {
       }
     },
 
-    /**
-     * Crear un nuevo registro
-     * @param {object} data - Datos del registro
-     */
     async create(data) {
       try {
         const response = await fetch(`${API_BASE}/${endpoint}`, {
@@ -73,11 +60,6 @@ export function createAPI(endpoint) {
       }
     },
 
-    /**
-     * Actualizar un registro
-     * @param {string} id - ID del registro
-     * @param {object} data - Datos actualizados
-     */
     async update(id, data) {
       try {
         const response = await fetch(`${API_BASE}/${endpoint}/${id}`, {
@@ -100,10 +82,6 @@ export function createAPI(endpoint) {
       }
     },
 
-    /**
-     * Eliminar un registro
-     * @param {string} id - ID del registro
-     */
     async delete(id) {
       try {
         const response = await fetch(`${API_BASE}/${endpoint}/${id}`, {
@@ -143,3 +121,11 @@ export const AjustesAPI = createAPI('ajustes');
 export const BitacoraAPI = createAPI('bitacora');
 export const FacturasAPI = createAPI('facturas');
 export const CarritoAPI = createAPI('carrito');
+export const MarcasAPI = createAPI('marcas');
+export const MonedasAPI = createAPI('monedas');
+export const ProductosAPI = createAPI('productos');
+export const PedidosAPI = createAPI('pedidos');
+export const UsuariosAPI = createAPI('usuarios');
+export const ContactosAPI = createAPI('contactos');
+export const PagosAPI = createAPI('pagos');
+export const EnviosAPI = createAPI('envios');

@@ -1,5 +1,5 @@
 // /client/js/config/collections.js
-// Configuración de las 24 colecciones del sistema
+// Configuración de las 26 colecciones del sistema (agregadas marcas y monedas)
 
 export const COLLECTIONS = {
   // ============================================================
@@ -10,16 +10,106 @@ export const COLLECTIONS = {
     nameSingular: 'Producto',
     icon: '📦',
     endpoint: 'productos',
+    tableColumns: ['imagen', 'nombre', 'marca', 'categoria', 'precio', 'stock'],
     fields: {
-      nombre: { label: 'Nombre', type: 'text', required: true },
-      marca: { label: 'Marca', type: 'text', required: true },
-      categoria: { label: 'Categoría', type: 'text', required: true },
-      precio: { label: 'Precio', type: 'number', required: true },
-      stock: { label: 'Stock', type: 'number', required: true },
-      imagen: { label: 'Imagen URL', type: 'text' },
-      resena: { label: 'Descripción', type: 'textarea' }
-    },
-    tableColumns: ['imagen', 'nombre', 'categoria', 'marca', 'precio', 'stock']
+      nombre: {
+        label: 'Nombre del Producto',
+        type: 'text',
+        required: true,
+        maxLength: 200,
+        placeholder: 'Ej: Laptop Gaming ASUS ROG Strix G15'
+      },
+      marca: {
+        label: 'Marca',
+        type: 'dynamic-select',
+        required: true,
+        endpoint: 'marcas',
+        valueField: 'nombre',
+        labelField: 'nombre'
+      },
+      categoria: {
+        label: 'Categoría',
+        type: 'dynamic-select',
+        required: true,
+        endpoint: 'categorias',
+        valueField: 'nombre',
+        labelField: 'nombre'
+      },
+      precio: {
+        label: 'Precio',
+        type: 'number',
+        required: true,
+        min: 0.01,
+        step: 0.01,
+        placeholder: '0.00'
+      },
+      moneda: {
+        label: 'Moneda',
+        type: 'dynamic-select',
+        required: true,
+        endpoint: 'monedas',
+        valueField: 'codigo',
+        labelField: 'codigo',
+        default: 'USD'
+      },
+      stock: {
+        label: 'Stock Disponible',
+        type: 'number',
+        required: true,
+        min: 0,
+        step: 1,
+        placeholder: '0'
+      },
+      imagen: {
+        label: 'URL de Imagen Principal',
+        type: 'url',
+        required: true,
+        placeholder: './assets/images/productos/producto.jpg'
+      },
+      resena: {
+        label: 'Reseña Corta',
+        type: 'textarea',
+        required: true,
+        maxLength: 150,
+        placeholder: 'Descripción breve (máx 150 caracteres)',
+        rows: 2
+      },
+      descripcion: {
+        label: 'Descripción Completa',
+        type: 'textarea',
+        required: false,
+        placeholder: 'Descripción detallada del producto',
+        rows: 4
+      },
+      specs: {
+        label: 'Especificaciones',
+        type: 'textarea',
+        required: false,
+        placeholder: 'Una especificación por línea',
+        rows: 5,
+        help: 'Escribe cada especificación en una línea nueva'
+      },
+      colores: {
+        label: 'Colores (JSON)',
+        type: 'textarea',
+        required: false,
+        placeholder: '[{"color":"Negro","disponible":true}]',
+        rows: 3,
+        help: 'Formato JSON array'
+      },
+      imagenes: {
+        label: 'Imágenes Adicionales (JSON)',
+        type: 'textarea',
+        required: false,
+        placeholder: '["./assets/images/img1.jpg"]',
+        rows: 2
+      },
+      activo: {
+        label: 'Producto Activo',
+        type: 'checkbox',
+        default: true
+      }
+    }
   },
 
   categorias: {
@@ -27,14 +117,61 @@ export const COLLECTIONS = {
     nameSingular: 'Categoría',
     icon: '🏷️',
     endpoint: 'categorias',
+    tableColumns: ['nombre', 'descripcion', 'activo'],
     fields: {
-      nombre: { label: 'Nombre', type: 'text', required: true },
-      descripcion: { label: 'Descripción', type: 'textarea' },
-      slug: { label: 'Slug', type: 'text', required: true },
-      orden: { label: 'Orden', type: 'number' },
-      activo: { label: 'Activo', type: 'checkbox' }
-    },
-    tableColumns: ['nombre', 'slug', 'orden', 'activo']
+      nombre: { 
+        label: 'Nombre', 
+        type: 'text', 
+        required: true,
+        placeholder: 'Laptops, Componentes, etc.'
+      },
+      descripcion: { 
+        label: 'Descripción', 
+        type: 'textarea',
+        placeholder: 'Descripción de la categoría'
+      },
+      icono: { 
+        label: 'Icono (emoji)', 
+        type: 'text',
+        placeholder: '💻'
+      },
+      activo: { 
+        label: 'Activa', 
+        type: 'checkbox',
+        default: true
+      }
+    }
+  },
+
+  marcas: {
+    name: 'Marcas',
+    nameSingular: 'Marca',
+    icon: '🏢',
+    endpoint: 'marcas',
+    tableColumns: ['nombre', 'descripcion', 'activo'],
+    fields: {
+      nombre: { 
+        label: 'Nombre de la Marca', 
+        type: 'text', 
+        required: true,
+        placeholder: 'Ej: Asus, Logitech, etc.'
+      },
+      descripcion: { 
+        label: 'Descripción', 
+        type: 'textarea',
+        placeholder: 'Información sobre la marca'
+      },
+      logo: { 
+        label: 'URL del Logo', 
+        type: 'url',
+        placeholder: './assets/images/marcas/logo.png'
+      },
+      activo: { 
+        label: 'Activa', 
+        type: 'checkbox',
+        default: true
+      }
+    }
   },
 
   pedidos: {
@@ -42,13 +179,32 @@ export const COLLECTIONS = {
     nameSingular: 'Pedido',
     icon: '🛍️',
     endpoint: 'pedidos',
+    tableColumns: ['id', 'usuarioId', 'total', 'estado', 'createdAt'],
     fields: {
-      usuarioId: { label: 'Usuario ID', type: 'text', required: true },
-      total: { label: 'Total', type: 'number', required: true },
-      estado: { label: 'Estado', type: 'text', required: true },
-      direccionEnvio: { label: 'Dirección', type: 'textarea' }
-    },
-    tableColumns: ['id', 'usuarioId', 'total', 'estado', 'fecha']
+      usuarioId: { 
+        label: 'Usuario ID', 
+        type: 'text', 
+        required: true 
+      },
+      total: { 
+        label: 'Total', 
+        type: 'number', 
+        required: true,
+        min: 0,
+        step: 0.01
+      },
+      estado: { 
+        label: 'Estado', 
+        type: 'text', 
+        required: true,
+        placeholder: 'pendiente, procesando, enviado, entregado'
+      },
+      direccionEnvio: { 
+        label: 'Dirección', 
+        type: 'textarea',
+        rows: 3
+      }
+    }
   },
 
   carrito: {
@@ -56,11 +212,20 @@ export const COLLECTIONS = {
     nameSingular: 'Carrito',
     icon: '🛒',
     endpoint: 'carrito',
+    tableColumns: ['usuarioId', 'total', 'createdAt'],
     fields: {
-      usuarioId: { label: 'Usuario ID', type: 'text', required: true },
-      total: { label: 'Total', type: 'number' }
-    },
-    tableColumns: ['usuarioId', 'total', 'items']
+      usuarioId: { 
+        label: 'Usuario ID', 
+        type: 'text', 
+        required: true 
+      },
+      total: { 
+        label: 'Total', 
+        type: 'number',
+        min: 0,
+        step: 0.01
+      }
+    }
   },
 
   // ============================================================
@@ -71,15 +236,46 @@ export const COLLECTIONS = {
     nameSingular: 'Factura',
     icon: '📄',
     endpoint: 'facturas',
+    tableColumns: ['numero', 'pedidoId', 'total', 'estado', 'createdAt'],
     fields: {
-      numero: { label: 'Número', type: 'text', required: true },
-      pedidoId: { label: 'Pedido ID', type: 'text', required: true },
-      subtotal: { label: 'Subtotal', type: 'number', required: true },
-      iva: { label: 'IVA', type: 'number', required: true },
-      total: { label: 'Total', type: 'number', required: true },
-      estado: { label: 'Estado', type: 'text' }
-    },
-    tableColumns: ['numero', 'pedidoId', 'total', 'estado', 'fecha']
+      numero: { 
+        label: 'Número', 
+        type: 'text', 
+        required: true,
+        placeholder: 'FAC-001'
+      },
+      pedidoId: { 
+        label: 'Pedido ID', 
+        type: 'text', 
+        required: true 
+      },
+      subtotal: { 
+        label: 'Subtotal', 
+        type: 'number', 
+        required: true,
+        min: 0,
+        step: 0.01
+      },
+      iva: { 
+        label: 'IVA', 
+        type: 'number', 
+        required: true,
+        min: 0,
+        step: 0.01
+      },
+      total: { 
+        label: 'Total', 
+        type: 'number', 
+        required: true,
+        min: 0,
+        step: 0.01
+      },
+      estado: { 
+        label: 'Estado', 
+        type: 'text',
+        placeholder: 'emitida, pagada, anulada'
+      }
+    }
   },
 
   pagos: {
@@ -87,14 +283,38 @@ export const COLLECTIONS = {
     nameSingular: 'Pago',
     icon: '💳',
     endpoint: 'pagos',
+    tableColumns: ['pedidoId', 'monto', 'formaPago', 'estado', 'createdAt'],
     fields: {
-      pedidoId: { label: 'Pedido ID', type: 'text', required: true },
-      monto: { label: 'Monto', type: 'number', required: true },
-      formaPago: { label: 'Forma de Pago', type: 'text', required: true },
-      estado: { label: 'Estado', type: 'text', required: true },
-      referencia: { label: 'Referencia', type: 'text' }
-    },
-    tableColumns: ['pedidoId', 'monto', 'formaPago', 'estado', 'fecha']
+      pedidoId: { 
+        label: 'Pedido ID', 
+        type: 'text', 
+        required: true 
+      },
+      monto: { 
+        label: 'Monto', 
+        type: 'number', 
+        required: true,
+        min: 0,
+        step: 0.01
+      },
+      formaPago: { 
+        label: 'Forma de Pago', 
+        type: 'text', 
+        required: true,
+        placeholder: 'Tarjeta, Efectivo, Transferencia'
+      },
+      estado: { 
+        label: 'Estado', 
+        type: 'text', 
+        required: true,
+        placeholder: 'pendiente, aprobado, rechazado'
+      },
+      referencia: { 
+        label: 'Referencia', 
+        type: 'text',
+        placeholder: 'Código de transacción'
+      }
+    }
   },
 
   envios: {
@@ -102,14 +322,36 @@ export const COLLECTIONS = {
     nameSingular: 'Envío',
     icon: '🚚',
     endpoint: 'envios',
+    tableColumns: ['pedidoId', 'estado', 'trackingNumber', 'courier'],
     fields: {
-      pedidoId: { label: 'Pedido ID', type: 'text', required: true },
-      estado: { label: 'Estado', type: 'text', required: true },
-      trackingNumber: { label: 'Tracking', type: 'text' },
-      courier: { label: 'Courier', type: 'text' },
-      costoEnvio: { label: 'Costo', type: 'number' }
-    },
-    tableColumns: ['pedidoId', 'estado', 'trackingNumber', 'courier']
+      pedidoId: { 
+        label: 'Pedido ID', 
+        type: 'text', 
+        required: true 
+      },
+      estado: { 
+        label: 'Estado', 
+        type: 'text', 
+        required: true,
+        placeholder: 'preparando, en_transito, entregado'
+      },
+      trackingNumber: { 
+        label: 'Tracking', 
+        type: 'text',
+        placeholder: 'ABC123456'
+      },
+      courier: { 
+        label: 'Courier', 
+        type: 'text',
+        placeholder: 'Servientrega, DHL, etc.'
+      },
+      costoEnvio: { 
+        label: 'Costo', 
+        type: 'number',
+        min: 0,
+        step: 0.01
+      }
+    }
   },
 
   descuentos: {
@@ -117,14 +359,38 @@ export const COLLECTIONS = {
     nameSingular: 'Descuento',
     icon: '🎁',
     endpoint: 'descuentos',
+    tableColumns: ['codigo', 'tipo', 'valor', 'activo'],
     fields: {
-      codigo: { label: 'Código', type: 'text', required: true },
-      descripcion: { label: 'Descripción', type: 'textarea' },
-      tipo: { label: 'Tipo', type: 'text', required: true },
-      valor: { label: 'Valor', type: 'number', required: true },
-      activo: { label: 'Activo', type: 'checkbox' }
-    },
-    tableColumns: ['codigo', 'tipo', 'valor', 'activo']
+      codigo: { 
+        label: 'Código', 
+        type: 'text', 
+        required: true,
+        placeholder: 'VERANO2024'
+      },
+      descripcion: { 
+        label: 'Descripción', 
+        type: 'textarea',
+        rows: 2
+      },
+      tipo: { 
+        label: 'Tipo', 
+        type: 'text', 
+        required: true,
+        placeholder: 'porcentaje, monto_fijo'
+      },
+      valor: { 
+        label: 'Valor', 
+        type: 'number', 
+        required: true,
+        min: 0,
+        step: 0.01
+      },
+      activo: { 
+        label: 'Activo', 
+        type: 'checkbox',
+        default: true
+      }
+    }
   },
 
   // ============================================================
@@ -135,13 +401,30 @@ export const COLLECTIONS = {
     nameSingular: 'Usuario',
     icon: '👥',
     endpoint: 'usuarios',
+    tableColumns: ['nombre', 'email', 'rol', 'activo'],
     fields: {
-      nombre: { label: 'Nombre', type: 'text', required: true },
-      email: { label: 'Email', type: 'email', required: true },
-      rol: { label: 'Rol', type: 'text', required: true },
-      activo: { label: 'Activo', type: 'checkbox' }
-    },
-    tableColumns: ['nombre', 'email', 'rol', 'activo']
+      nombre: { 
+        label: 'Nombre', 
+        type: 'text', 
+        required: true 
+      },
+      email: { 
+        label: 'Email', 
+        type: 'email', 
+        required: true 
+      },
+      rol: { 
+        label: 'Rol', 
+        type: 'text', 
+        required: true,
+        placeholder: 'admin, vendedor, cliente'
+      },
+      activo: { 
+        label: 'Activo', 
+        type: 'checkbox',
+        default: true
+      }
+    }
   },
 
   clientes: {
@@ -149,12 +432,25 @@ export const COLLECTIONS = {
     nameSingular: 'Cliente',
     icon: '👤',
     endpoint: 'clientes',
+    tableColumns: ['usuarioId', 'numeroDocumento', 'telefono'],
     fields: {
-      usuarioId: { label: 'Usuario ID', type: 'text', required: true },
-      numeroDocumento: { label: 'Documento', type: 'text', required: true },
-      telefono: { label: 'Teléfono', type: 'text' }
-    },
-    tableColumns: ['usuarioId', 'numeroDocumento', 'telefono']
+      usuarioId: { 
+        label: 'Usuario ID', 
+        type: 'text', 
+        required: true 
+      },
+      numeroDocumento: { 
+        label: 'Documento', 
+        type: 'text', 
+        required: true,
+        placeholder: '1234567890'
+      },
+      telefono: { 
+        label: 'Teléfono', 
+        type: 'text',
+        placeholder: '+593 99 123 4567'
+      }
+    }
   },
 
   contactos: {
@@ -162,14 +458,35 @@ export const COLLECTIONS = {
     nameSingular: 'Mensaje',
     icon: '📧',
     endpoint: 'contactos',
+    tableColumns: ['nombre', 'email', 'asunto', 'estado'],
     fields: {
-      nombre: { label: 'Nombre', type: 'text', required: true },
-      email: { label: 'Email', type: 'email', required: true },
-      asunto: { label: 'Asunto', type: 'text', required: true },
-      mensaje: { label: 'Mensaje', type: 'textarea', required: true },
-      estado: { label: 'Estado', type: 'text' }
-    },
-    tableColumns: ['nombre', 'email', 'asunto', 'estado']
+      nombre: { 
+        label: 'Nombre', 
+        type: 'text', 
+        required: true 
+      },
+      email: { 
+        label: 'Email', 
+        type: 'email', 
+        required: true 
+      },
+      asunto: { 
+        label: 'Asunto', 
+        type: 'text', 
+        required: true 
+      },
+      mensaje: { 
+        label: 'Mensaje', 
+        type: 'textarea', 
+        required: true,
+        rows: 5
+      },
+      estado: { 
+        label: 'Estado', 
+        type: 'text',
+        placeholder: 'nuevo, leido, respondido'
+      }
+    }
   },
 
   ubicaciones: {
@@ -177,15 +494,42 @@ export const COLLECTIONS = {
     nameSingular: 'Ubicación',
     icon: '📍',
     endpoint: 'ubicaciones',
+    tableColumns: ['nombre', 'tipo', 'ciudad', 'predeterminada'],
     fields: {
-      clienteId: { label: 'Cliente ID', type: 'text', required: true },
-      tipo: { label: 'Tipo', type: 'text', required: true },
-      nombre: { label: 'Nombre', type: 'text', required: true },
-      direccion: { label: 'Dirección', type: 'textarea', required: true },
-      ciudad: { label: 'Ciudad', type: 'text', required: true },
-      predeterminada: { label: 'Predeterminada', type: 'checkbox' }
-    },
-    tableColumns: ['nombre', 'tipo', 'ciudad', 'predeterminada']
+      clienteId: { 
+        label: 'Cliente ID', 
+        type: 'text', 
+        required: true 
+      },
+      tipo: { 
+        label: 'Tipo', 
+        type: 'text', 
+        required: true,
+        placeholder: 'casa, oficina, otro'
+      },
+      nombre: { 
+        label: 'Nombre', 
+        type: 'text', 
+        required: true,
+        placeholder: 'Mi Casa'
+      },
+      direccion: { 
+        label: 'Dirección', 
+        type: 'textarea', 
+        required: true,
+        rows: 3,
+        placeholder: 'Calle, número, referencias'
+      },
+      ciudad: { 
+        label: 'Ciudad', 
+        type: 'text', 
+        required: true 
+      },
+      predeterminada: { 
+        label: 'Predeterminada', 
+        type: 'checkbox' 
+      }
+    }
   },
 
   // ============================================================
@@ -196,13 +540,30 @@ export const COLLECTIONS = {
     nameSingular: 'Bodega',
     icon: '🏭',
     endpoint: 'bodega',
+    tableColumns: ['nombre', 'codigo', 'tipo', 'activo'],
     fields: {
-      nombre: { label: 'Nombre', type: 'text', required: true },
-      codigo: { label: 'Código', type: 'text', required: true },
-      tipo: { label: 'Tipo', type: 'text' },
-      activo: { label: 'Activo', type: 'checkbox' }
-    },
-    tableColumns: ['nombre', 'codigo', 'tipo', 'activo']
+      nombre: { 
+        label: 'Nombre', 
+        type: 'text', 
+        required: true 
+      },
+      codigo: { 
+        label: 'Código', 
+        type: 'text', 
+        required: true,
+        placeholder: 'BOD-001'
+      },
+      tipo: { 
+        label: 'Tipo', 
+        type: 'text',
+        placeholder: 'principal, secundaria'
+      },
+      activo: { 
+        label: 'Activo', 
+        type: 'checkbox',
+        default: true
+      }
+    }
   },
 
   proveedores: {
@@ -210,14 +571,35 @@ export const COLLECTIONS = {
     nameSingular: 'Proveedor',
     icon: '🏢',
     endpoint: 'proveedores',
+    tableColumns: ['nombre', 'ruc', 'email', 'telefono', 'activo'],
     fields: {
-      nombre: { label: 'Nombre', type: 'text', required: true },
-      ruc: { label: 'RUC', type: 'text', required: true },
-      email: { label: 'Email', type: 'email', required: true },
-      telefono: { label: 'Teléfono', type: 'text' },
-      activo: { label: 'Activo', type: 'checkbox' }
-    },
-    tableColumns: ['nombre', 'ruc', 'email', 'telefono', 'activo']
+      nombre: { 
+        label: 'Nombre', 
+        type: 'text', 
+        required: true 
+      },
+      ruc: { 
+        label: 'RUC', 
+        type: 'text', 
+        required: true,
+        placeholder: '1234567890001'
+      },
+      email: { 
+        label: 'Email', 
+        type: 'email', 
+        required: true 
+      },
+      telefono: { 
+        label: 'Teléfono', 
+        type: 'text',
+        placeholder: '+593 99 123 4567'
+      },
+      activo: { 
+        label: 'Activo', 
+        type: 'checkbox',
+        default: true
+      }
+    }
   },
 
   'ordenes-compra': {
@@ -225,13 +607,33 @@ export const COLLECTIONS = {
     nameSingular: 'Orden de Compra',
     icon: '📝',
     endpoint: 'ordenes-compra',
+    tableColumns: ['numero', 'proveedorId', 'total', 'estado'],
     fields: {
-      numero: { label: 'Número', type: 'text', required: true },
-      proveedorId: { label: 'Proveedor ID', type: 'text', required: true },
-      total: { label: 'Total', type: 'number', required: true },
-      estado: { label: 'Estado', type: 'text', required: true }
-    },
-    tableColumns: ['numero', 'proveedorId', 'total', 'estado']
+      numero: { 
+        label: 'Número', 
+        type: 'text', 
+        required: true,
+        placeholder: 'OC-001'
+      },
+      proveedorId: { 
+        label: 'Proveedor ID', 
+        type: 'text', 
+        required: true 
+      },
+      total: { 
+        label: 'Total', 
+        type: 'number', 
+        required: true,
+        min: 0,
+        step: 0.01
+      },
+      estado: { 
+        label: 'Estado', 
+        type: 'text', 
+        required: true,
+        placeholder: 'pendiente, recibida, cancelada'
+      }
+    }
   },
 
   movimientos: {
@@ -239,14 +641,36 @@ export const COLLECTIONS = {
     nameSingular: 'Movimiento',
     icon: '↔️',
     endpoint: 'movimientos',
+    tableColumns: ['tipo', 'productoId', 'cantidad', 'createdAt'],
     fields: {
-      tipo: { label: 'Tipo', type: 'text', required: true },
-      bodegaId: { label: 'Bodega ID', type: 'text', required: true },
-      productoId: { label: 'Producto ID', type: 'text', required: true },
-      cantidad: { label: 'Cantidad', type: 'number', required: true },
-      motivo: { label: 'Motivo', type: 'textarea' }
-    },
-    tableColumns: ['tipo', 'productoId', 'cantidad', 'fecha']
+      tipo: { 
+        label: 'Tipo', 
+        type: 'text', 
+        required: true,
+        placeholder: 'entrada, salida, ajuste'
+      },
+      bodegaId: { 
+        label: 'Bodega ID', 
+        type: 'text', 
+        required: true 
+      },
+      productoId: { 
+        label: 'Producto ID', 
+        type: 'text', 
+        required: true 
+      },
+      cantidad: { 
+        label: 'Cantidad', 
+        type: 'number', 
+        required: true,
+        step: 1
+      },
+      motivo: { 
+        label: 'Motivo', 
+        type: 'textarea',
+        rows: 3
+      }
+    }
   },
 
   // ============================================================
@@ -257,12 +681,25 @@ export const COLLECTIONS = {
     nameSingular: 'País',
     icon: '🌎',
     endpoint: 'paises',
+    tableColumns: ['nombre', 'codigo', 'activo'],
     fields: {
-      nombre: { label: 'Nombre', type: 'text', required: true },
-      codigo: { label: 'Código', type: 'text', required: true },
-      activo: { label: 'Activo', type: 'checkbox' }
-    },
-    tableColumns: ['nombre', 'codigo', 'activo']
+      nombre: { 
+        label: 'Nombre', 
+        type: 'text', 
+        required: true 
+      },
+      codigo: { 
+        label: 'Código', 
+        type: 'text', 
+        required: true,
+        placeholder: 'EC, US, CO'
+      },
+      activo: { 
+        label: 'Activo', 
+        type: 'checkbox',
+        default: true
+      }
+    }
   },
 
   ciudades: {
@@ -270,12 +707,24 @@ export const COLLECTIONS = {
     nameSingular: 'Ciudad',
     icon: '🏙️',
     endpoint: 'ciudades',
+    tableColumns: ['nombre', 'paisId', 'activo'],
     fields: {
-      nombre: { label: 'Nombre', type: 'text', required: true },
-      paisId: { label: 'País ID', type: 'text', required: true },
-      activo: { label: 'Activo', type: 'checkbox' }
-    },
-    tableColumns: ['nombre', 'paisId', 'activo']
+      nombre: { 
+        label: 'Nombre', 
+        type: 'text', 
+        required: true 
+      },
+      paisId: { 
+        label: 'País ID', 
+        type: 'text', 
+        required: true 
+      },
+      activo: { 
+        label: 'Activo', 
+        type: 'checkbox',
+        default: true
+      }
+    }
   },
 
   // ============================================================
@@ -286,13 +735,31 @@ export const COLLECTIONS = {
     nameSingular: 'Rol',
     icon: '🔑',
     endpoint: 'roles',
+    tableColumns: ['nombre', 'nivel', 'activo'],
     fields: {
-      nombre: { label: 'Nombre', type: 'text', required: true },
-      descripcion: { label: 'Descripción', type: 'textarea' },
-      nivel: { label: 'Nivel', type: 'number', required: true },
-      activo: { label: 'Activo', type: 'checkbox' }
-    },
-    tableColumns: ['nombre', 'nivel', 'activo']
+      nombre: { 
+        label: 'Nombre', 
+        type: 'text', 
+        required: true 
+      },
+      descripcion: { 
+        label: 'Descripción', 
+        type: 'textarea',
+        rows: 2
+      },
+      nivel: { 
+        label: 'Nivel', 
+        type: 'number', 
+        required: true,
+        min: 1,
+        step: 1
+      },
+      activo: { 
+        label: 'Activo', 
+        type: 'checkbox',
+        default: true
+      }
+    }
   },
 
   estados: {
@@ -300,14 +767,35 @@ export const COLLECTIONS = {
     nameSingular: 'Estado',
     icon: '📊',
     endpoint: 'estados',
+    tableColumns: ['nombre', 'tipo', 'codigo', 'activo'],
     fields: {
-      nombre: { label: 'Nombre', type: 'text', required: true },
-      tipo: { label: 'Tipo', type: 'text', required: true },
-      codigo: { label: 'Código', type: 'text', required: true },
-      color: { label: 'Color', type: 'text' },
-      activo: { label: 'Activo', type: 'checkbox' }
-    },
-    tableColumns: ['nombre', 'tipo', 'codigo', 'activo']
+      nombre: { 
+        label: 'Nombre', 
+        type: 'text', 
+        required: true 
+      },
+      tipo: { 
+        label: 'Tipo', 
+        type: 'text', 
+        required: true,
+        placeholder: 'pedido, pago, envio'
+      },
+      codigo: { 
+        label: 'Código', 
+        type: 'text', 
+        required: true 
+      },
+      color: { 
+        label: 'Color', 
+        type: 'text',
+        placeholder: '#3b82f6'
+      },
+      activo: { 
+        label: 'Activo', 
+        type: 'checkbox',
+        default: true
+      }
+    }
   },
 
   'forma-pago': {
@@ -315,13 +803,32 @@ export const COLLECTIONS = {
     nameSingular: 'Forma de Pago',
     icon: '💰',
     endpoint: 'forma-pago',
+    tableColumns: ['nombre', 'tipo', 'comision', 'activo'],
     fields: {
-      nombre: { label: 'Nombre', type: 'text', required: true },
-      tipo: { label: 'Tipo', type: 'text', required: true },
-      comision: { label: 'Comisión (%)', type: 'number' },
-      activo: { label: 'Activo', type: 'checkbox' }
-    },
-    tableColumns: ['nombre', 'tipo', 'comision', 'activo']
+      nombre: { 
+        label: 'Nombre', 
+        type: 'text', 
+        required: true,
+        placeholder: 'Tarjeta de Crédito'
+      },
+      tipo: { 
+        label: 'Tipo', 
+        type: 'text', 
+        required: true,
+        placeholder: 'tarjeta, efectivo, transferencia'
+      },
+      comision: { 
+        label: 'Comisión (%)', 
+        type: 'number',
+        min: 0,
+        step: 0.01
+      },
+      activo: { 
+        label: 'Activo', 
+        type: 'checkbox',
+        default: true
+      }
+    }
   },
 
   'unidades-medidas': {
@@ -329,13 +836,67 @@ export const COLLECTIONS = {
     nameSingular: 'Unidad de Medida',
     icon: '📏',
     endpoint: 'unidades-medidas',
+    tableColumns: ['nombre', 'simbolo', 'tipo', 'activo'],
     fields: {
-      nombre: { label: 'Nombre', type: 'text', required: true },
-      simbolo: { label: 'Símbolo', type: 'text', required: true },
-      tipo: { label: 'Tipo', type: 'text', required: true },
-      activo: { label: 'Activo', type: 'checkbox' }
-    },
-    tableColumns: ['nombre', 'simbolo', 'tipo', 'activo']
+      nombre: { 
+        label: 'Nombre', 
+        type: 'text', 
+        required: true,
+        placeholder: 'Kilogramo, Litro, etc.'
+      },
+      simbolo: { 
+        label: 'Símbolo', 
+        type: 'text', 
+        required: true,
+        placeholder: 'kg, L, etc.'
+      },
+      tipo: { 
+        label: 'Tipo', 
+        type: 'text', 
+        required: true,
+        placeholder: 'peso, volumen, longitud'
+      },
+      activo: { 
+        label: 'Activo', 
+        type: 'checkbox',
+        default: true
+      }
+    }
+  },
+
+  monedas: {
+    name: 'Monedas',
+    nameSingular: 'Moneda',
+    icon: '💵',
+    endpoint: 'monedas',
+    tableColumns: ['codigo', 'nombre', 'simbolo', 'activo'],
+    fields: {
+      codigo: { 
+        label: 'Código', 
+        type: 'text', 
+        required: true,
+        placeholder: 'USD, EUR, etc.',
+        maxLength: 3
+      },
+      nombre: { 
+        label: 'Nombre', 
+        type: 'text', 
+        required: true,
+        placeholder: 'Dólar Estadounidense'
+      },
+      simbolo: { 
+        label: 'Símbolo', 
+        type: 'text', 
+        required: true,
+        placeholder: '$',
+        maxLength: 3
+      },
+      activo: { 
+        label: 'Activa', 
+        type: 'checkbox',
+        default: true
+      }
+    }
   },
 
   ajustes: {
@@ -343,14 +904,35 @@ export const COLLECTIONS = {
     nameSingular: 'Ajuste',
     icon: '⚙️',
     endpoint: 'ajustes',
+    tableColumns: ['clave', 'valor', 'categoria', 'publico'],
     fields: {
-      clave: { label: 'Clave', type: 'text', required: true },
-      valor: { label: 'Valor', type: 'text', required: true },
-      categoria: { label: 'Categoría', type: 'text', required: true },
-      descripcion: { label: 'Descripción', type: 'textarea' },
-      publico: { label: 'Público', type: 'checkbox' }
-    },
-    tableColumns: ['clave', 'valor', 'categoria', 'publico']
+      clave: { 
+        label: 'Clave', 
+        type: 'text', 
+        required: true,
+        placeholder: 'app.nombre'
+      },
+      valor: { 
+        label: 'Valor', 
+        type: 'text', 
+        required: true 
+      },
+      categoria: { 
+        label: 'Categoría', 
+        type: 'text', 
+        required: true,
+        placeholder: 'general, seguridad, email'
+      },
+      descripcion: { 
+        label: 'Descripción', 
+        type: 'textarea',
+        rows: 2
+      },
+      publico: { 
+        label: 'Público', 
+        type: 'checkbox' 
+      }
+    }
   },
 
   // ============================================================
@@ -361,13 +943,31 @@ export const COLLECTIONS = {
     nameSingular: 'Registro',
     icon: '📋',
     endpoint: 'bitacora_operaciones',
+    tableColumns: ['tipo', 'accion', 'usuario', 'createdAt'],
     fields: {
-      tipo: { label: 'Tipo', type: 'text', required: true },
-      accion: { label: 'Acción', type: 'text', required: true },
-      usuario: { label: 'Usuario', type: 'text', required: true },
-      descripcion: { label: 'Descripción', type: 'textarea' }
-    },
-    tableColumns: ['tipo', 'accion', 'usuario', 'fecha']
+      tipo: { 
+        label: 'Tipo', 
+        type: 'text', 
+        required: true,
+        placeholder: 'sistema, usuario, transaccion'
+      },
+      accion: { 
+        label: 'Acción', 
+        type: 'text', 
+        required: true,
+        placeholder: 'crear, editar, eliminar'
+      },
+      usuario: { 
+        label: 'Usuario', 
+        type: 'text', 
+        required: true 
+      },
+      descripcion: { 
+        label: 'Descripción', 
+        type: 'textarea',
+        rows: 3
+      }
+    }
   }
 };
 
@@ -375,7 +975,7 @@ export const COLLECTIONS = {
 export const MENU_SECTIONS = {
   general: {
     title: 'General',
-    collections: ['productos', 'categorias', 'pedidos', 'carrito']
+    collections: ['productos', 'categorias', 'marcas', 'pedidos', 'carrito']
   },
   ventas: {
     title: 'Ventas',
@@ -395,7 +995,7 @@ export const MENU_SECTIONS = {
   },
   configuracion: {
     title: 'Configuración',
-    collections: ['roles', 'estados', 'forma-pago', 'unidades-medidas', 'ajustes']
+    collections: ['roles', 'estados', 'forma-pago', 'unidades-medidas', 'monedas', 'ajustes']
   },
   sistema: {
     title: 'Sistema',

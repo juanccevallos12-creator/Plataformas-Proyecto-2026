@@ -1,3 +1,5 @@
+// client/js/logic/adminLogic.js
+
 import { COLLECTIONS } from "../config/collections.js";
 import { API_URL } from "../api/config.js";
 import { $, showToast } from "../utils.js";
@@ -7,6 +9,7 @@ const API_BASE = `${API_URL}/api`;
 let currentCollection = 'productos';
 let dataCache = [];
 let editingItem = null;
+let dynamicOptionsCache = {}; // Cache para opciones de selects dinámicos
 
 // ============================================================
 //              HELPER: OBTENER HEADERS CON TOKEN
@@ -22,6 +25,37 @@ function getAuthHeaders() {
   }
   
   return headers;
+}
+
+// ============================================================
+//              CARGAR OPCIONES DINÁMICAS
+// ============================================================
+async function loadDynamicOptions(endpoint) {
+  // Usar cache si ya se cargó
+  if (dynamicOptionsCache[endpoint]) {
+    return dynamicOptionsCache[endpoint];
+  }
+
+  try {
+    console.log(`📥 Cargando opciones de ${endpoint}...`);
+    const response = await fetch(`${API_BASE}/${endpoint}`, {
+      headers: getAuthHeaders()
+    });
+    
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    
+    const result = await response.json();
+    const options = result.data || [];
+    
+    // Guardar en cache
+    dynamicOptionsCache[endpoint] = options;
+    console.log(`✅ Opciones cargadas de ${endpoint}:`, options.length);
+    
+    return options;
+  } catch (error) {
+    console.error(`❌ Error cargando opciones de ${endpoint}:`, error);
+    return [];
+  }
 }
 
 // ============================================================
@@ -128,7 +162,7 @@ function renderTable() {
           let value = item[col];
           
           // Formateo especial
-        if (col === 'imagen' && value) {
+          if (col === 'imagen' && value) {
             return `<td><img src="${value}" alt="" class="admin-thumb" onerror="this.src='/assets/images/placeholder.jpg'"></td>`;
           }
           
@@ -148,12 +182,12 @@ function renderTable() {
             return `<td>${JSON.stringify(value).substring(0, 30)}...</td>`;
           }
           
-          if (col === 'activo' || col === 'leido') {
+          if (col === 'activo' || col === 'leido' || col === 'predeterminada' || col === 'publico') {
             return `<td><span class="badge ${value ? 'ok' : 'soon'}">${value ? 'Sí' : 'No'}</span></td>`;
           }
           
           // Manejo de fechas
-          if (col.includes('fecha') || col.includes('created') || col.includes('updated') || col === 'createdAt') {
+          if (col.includes('fecha') || col.includes('created') || col.includes('updated') || col === 'createdAt' || col.includes('_at')) {
             if (value) {
               try {
                 const date = new Date(value);
@@ -215,7 +249,7 @@ function renderStats() {
 // ============================================================
 //              ABRIR MODAL CREAR/EDITAR
 // ============================================================
-export function openModal(item = null) {
+export async function openModal(item = null) {
   editingItem = item;
   const config = COLLECTIONS[currentCollection];
   const modal = $("#modal-crud");
@@ -224,48 +258,231 @@ export function openModal(item = null) {
 
   if (!modal || !modalTitle || !formFields) return;
 
-  modalTitle.textContent = item ? `Editar ${config.nameSingular || config.name.slice(0, -1)}` : `Nuevo ${config.nameSingular || config.name.slice(0, -1)}`;
+  modalTitle.textContent = item 
+    ? `Editar ${config.nameSingular || config.name.slice(0, -1)}` 
+    : `Nuevo ${config.nameSingular || config.name.slice(0, -1)}`;
+
+  // Mostrar loading
+  formFields.innerHTML = '<div style="text-align:center; padding:2rem;">Cargando formulario...</div>';
+  modal.classList.add('show');
 
   // Generar campos del formulario
-  formFields.innerHTML = Object.entries(config.fields).map(([key, field]) => {
-    const value = item ? (item[key] || '') : '';
-    
-    if (field.type === 'textarea') {
-      return `
-        <div class="form-group full-width">
-          <label for="field-${key}">${field.label} ${field.required ? '*' : ''}</label>
-          <textarea id="field-${key}" name="${key}" rows="3" ${field.required ? 'required' : ''}>${value}</textarea>
-        </div>
-      `;
-    }
-    
-    if (field.type === 'checkbox') {
+  const fieldsHTML = await Promise.all(
+    Object.entries(config.fields).map(async ([key, field]) => {
+      const value = item ? (item[key] ?? field.default ?? '') : (field.default ?? '');
+      
+      // DYNAMIC SELECT - Carga opciones desde la API
+      if (field.type === 'dynamic-select') {
+        const options = await loadDynamicOptions(field.endpoint);
+        return `
+          <div class="form-group">
+            <label for="field-${key}">${field.label} ${field.required ? '<span style="color:#ef4444">*</span>' : ''}</label>
+            <select id="field-${key}" name="${key}" ${field.required ? 'required' : ''}>
+              <option value="">-- Seleccionar --</option>
+              ${options
+                .filter(opt => opt.activo !== false) // Solo opciones activas
+                .map(opt => {
+                  const optValue = opt[field.valueField];
+                  const optLabel = opt[field.labelField] || optValue;
+                  return `<option value="${optValue}" ${value === optValue ? 'selected' : ''}>${optLabel}</option>`;
+                })
+                .join('')}
+            </select>
+          </div>
+        `;
+      }
+      
+      // SELECT ESTÁTICO
+      if (field.type === 'select') {
+        return `
+          <div class="form-group">
+            <label for="field-${key}">${field.label} ${field.required ? '<span style="color:#ef4444">*</span>' : ''}</label>
+            <select id="field-${key}" name="${key}" ${field.required ? 'required' : ''}>
+              <option value="">-- Seleccionar --</option>
+              ${field.options.map(opt => 
+                `<option value="${opt}" ${value === opt ? 'selected' : ''}>${opt}</option>`
+              ).join('')}
+            </select>
+          </div>
+        `;
+      }
+      
+      // TEXTAREA
+      if (field.type === 'textarea') {
+        return `
+          <div class="form-group full-width">
+            <label for="field-${key}">
+              ${field.label} ${field.required ? '<span style="color:#ef4444">*</span>' : ''}
+              ${field.maxLength ? `<span style="font-size:0.85rem; color:#9ca3af">(máx ${field.maxLength} caracteres)</span>` : ''}
+              ${field.help ? `<span style="font-size:0.85rem; color:#9ca3af; display:block;">${field.help}</span>` : ''}
+            </label>
+            <textarea 
+              id="field-${key}" 
+              name="${key}" 
+              rows="${field.rows || 3}" 
+              ${field.required ? 'required' : ''}
+              ${field.maxLength ? `maxlength="${field.maxLength}"` : ''}
+              placeholder="${field.placeholder || ''}"
+            >${value}</textarea>
+            ${field.maxLength ? `<div class="char-counter" id="counter-${key}">0/${field.maxLength}</div>` : ''}
+          </div>
+        `;
+      }
+      
+      // CHECKBOX
+      if (field.type === 'checkbox') {
+        return `
+          <div class="form-group">
+            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer">
+              <input type="checkbox" id="field-${key}" name="${key}" ${value ? 'checked' : ''}>
+              <span>${field.label}</span>
+            </label>
+          </div>
+        `;
+      }
+      
+      // NUMBER (con validación visual)
+      if (field.type === 'number') {
+        return `
+          <div class="form-group">
+            <label for="field-${key}">${field.label} ${field.required ? '<span style="color:#ef4444">*</span>' : ''}</label>
+            <input 
+              type="number" 
+              id="field-${key}" 
+              name="${key}" 
+              value="${value}"
+              ${field.required ? 'required' : ''}
+              ${field.min !== undefined ? `min="${field.min}"` : ''}
+              ${field.max !== undefined ? `max="${field.max}"` : ''}
+              step="${field.step || '1'}"
+              placeholder="${field.placeholder || ''}"
+              class="validate-number"
+              data-field-name="${field.label}"
+            >
+            <div class="validation-feedback" id="feedback-${key}"></div>
+          </div>
+        `;
+      }
+      
+      // URL
+      if (field.type === 'url') {
+        return `
+          <div class="form-group full-width">
+            <label for="field-${key}">${field.label} ${field.required ? '<span style="color:#ef4444">*</span>' : ''}</label>
+            <input 
+              type="text" 
+              id="field-${key}" 
+              name="${key}" 
+              value="${value}"
+              ${field.required ? 'required' : ''}
+              placeholder="${field.placeholder || ''}"
+            >
+            ${value ? `<img src="${value}" alt="Preview" class="img-preview" onerror="this.style.display='none'">` : ''}
+          </div>
+        `;
+      }
+
+      // EMAIL
+      if (field.type === 'email') {
+        return `
+          <div class="form-group">
+            <label for="field-${key}">${field.label} ${field.required ? '<span style="color:#ef4444">*</span>' : ''}</label>
+            <input 
+              type="email" 
+              id="field-${key}" 
+              name="${key}" 
+              value="${value}"
+              ${field.required ? 'required' : ''}
+              placeholder="${field.placeholder || ''}"
+            >
+          </div>
+        `;
+      }
+      
+      // TEXT (default)
       return `
         <div class="form-group">
-          <label style="display:flex; align-items:center; gap:0.5rem;">
-            <input type="checkbox" id="field-${key}" name="${key}" ${value ? 'checked' : ''}>
-            <span>${field.label}</span>
-          </label>
+          <label for="field-${key}">${field.label} ${field.required ? '<span style="color:#ef4444">*</span>' : ''}</label>
+          <input 
+            type="text" 
+            id="field-${key}" 
+            name="${key}" 
+            value="${value}"
+            ${field.required ? 'required' : ''}
+            ${field.maxLength ? `maxlength="${field.maxLength}"` : ''}
+            placeholder="${field.placeholder || ''}"
+          >
         </div>
       `;
-    }
-    
-    return `
-      <div class="form-group">
-        <label for="field-${key}">${field.label} ${field.required ? '*' : ''}</label>
-        <input 
-          type="${field.type}" 
-          id="field-${key}" 
-          name="${key}" 
-          value="${value}"
-          ${field.required ? 'required' : ''}
-          ${field.type === 'number' ? 'step="0.01"' : ''}
-        >
-      </div>
-    `;
-  }).join('');
+    })
+  );
 
-  modal.classList.add('show');
+  formFields.innerHTML = fieldsHTML.join('');
+  
+  // Agregar validaciones en tiempo real
+  setupRealTimeValidation();
+}
+
+// ============================================================
+//              VALIDACIONES EN TIEMPO REAL
+// ============================================================
+function setupRealTimeValidation() {
+  // Validar números
+  document.querySelectorAll('.validate-number').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const value = parseFloat(e.target.value);
+      const min = parseFloat(e.target.min);
+      const fieldName = e.target.dataset.fieldName;
+      const feedback = document.getElementById(`feedback-${e.target.name}`);
+      
+      if (!feedback) return;
+      
+      if (isNaN(value) || e.target.value === '') {
+        feedback.textContent = '';
+        feedback.className = 'validation-feedback';
+        e.target.style.borderColor = '';
+        return;
+      }
+      
+      if (min !== undefined && value < min) {
+        feedback.textContent = `⚠️ ${fieldName} no puede ser menor que ${min}`;
+        feedback.className = 'validation-feedback error';
+        e.target.style.borderColor = '#ef4444';
+      } else if (value < 0) {
+        feedback.textContent = `❌ ${fieldName} no puede ser negativo`;
+        feedback.className = 'validation-feedback error';
+        e.target.style.borderColor = '#ef4444';
+      } else {
+        feedback.textContent = `✅ Válido`;
+        feedback.className = 'validation-feedback success';
+        e.target.style.borderColor = '#10b981';
+        
+        // Ocultar el mensaje después de 1 segundo
+        setTimeout(() => {
+          feedback.textContent = '';
+          e.target.style.borderColor = '';
+        }, 1000);
+      }
+    });
+  });
+
+  // Contador de caracteres para textareas
+  document.querySelectorAll('textarea[maxlength]').forEach(textarea => {
+    const counter = document.getElementById(`counter-${textarea.name}`);
+    if (counter) {
+      const updateCounter = () => {
+        counter.textContent = `${textarea.value.length}/${textarea.maxLength}`;
+        if (textarea.value.length > textarea.maxLength * 0.9) {
+          counter.style.color = '#ef4444';
+        } else {
+          counter.style.color = '#9ca3af';
+        }
+      };
+      
+      textarea.addEventListener('input', updateCounter);
+      updateCounter();
+    }
+  });
 }
 
 // ============================================================
@@ -295,9 +512,26 @@ export async function saveItem(e) {
       data[key] = formData.get(key) === 'on';
     } else if (field.type === 'number') {
       const value = formData.get(key);
-      data[key] = value ? parseFloat(value) : 0;
+      data[key] = value ? parseFloat(value) : (field.min !== undefined ? field.min : 0);
     } else {
-      data[key] = formData.get(key) || '';
+      const value = formData.get(key);
+      data[key] = value || '';
+      
+      // Procesar campos especiales
+      if (key === 'specs' && value) {
+        // Convertir texto línea por línea a array
+        data[key] = value.split('\n').filter(line => line.trim());
+      }
+      
+      if ((key === 'colores' || key === 'imagenes') && value) {
+        // Intentar parsear JSON
+        try {
+          data[key] = JSON.parse(value);
+        } catch (err) {
+          // Si no es JSON válido, dejarlo como está
+          console.warn(`${key} no es JSON válido, guardando como texto`);
+        }
+      }
     }
   }
 
@@ -338,6 +572,13 @@ export async function saveItem(e) {
     if (response.ok) {
       showToast(editingItem ? '✅ Actualizado correctamente' : '✅ Creado correctamente');
       closeModal();
+      
+      // Limpiar cache de opciones dinámicas si se modificó una colección que es fuente de datos
+      const affectedEndpoints = ['marcas', 'categorias', 'monedas'];
+      if (affectedEndpoints.includes(config.endpoint)) {
+        delete dynamicOptionsCache[config.endpoint];
+      }
+      
       await fetchData();
     } else {
       const error = await response.json();
@@ -385,6 +626,13 @@ export async function deleteItem(id) {
 
     if (response.ok) {
       showToast('🗑️ Eliminado correctamente');
+      
+      // Limpiar cache si se eliminó de una colección fuente
+      const affectedEndpoints = ['marcas', 'categorias', 'monedas'];
+      if (affectedEndpoints.includes(config.endpoint)) {
+        delete dynamicOptionsCache[config.endpoint];
+      }
+      
       await fetchData();
     } else {
       showToast('❌ Error al eliminar');
