@@ -3,12 +3,8 @@
 import { fetchJSON } from "../utils.js";
 import { API_URL } from "./config.js";
 
-/* ================================
-      AUTENTICACIÓN API
-=================================== */
-
 export async function loginUser(credentials) {
-  const res = await fetchJSON(`${API_URL}/auth/login`, {
+  const res = await fetchJSON(`${API_URL}/api/auth/login`, {  // ← Agregué /api
     method: "POST",
     body: JSON.stringify(credentials),
   });
@@ -16,7 +12,7 @@ export async function loginUser(credentials) {
 }
 
 export async function registerUser(userData) {
-  const res = await fetchJSON(`${API_URL}/auth/register`, {
+  const res = await fetchJSON(`${API_URL}/api/auth/register`, {  // ← Agregué /api
     method: "POST",
     body: JSON.stringify(userData),
   });
@@ -24,7 +20,7 @@ export async function registerUser(userData) {
 }
 
 export async function verifyToken(token) {
-  const res = await fetchJSON(`${API_URL}/auth/verify`, {
+  const res = await fetchJSON(`${API_URL}/api/auth/verify`, {  // ← Agregué /api
     method: "POST",
     body: JSON.stringify({ token }),
   });
@@ -32,7 +28,7 @@ export async function verifyToken(token) {
 }
 
 export async function cambiarPassword(data) {
-  const res = await fetchJSON(`${API_URL}/auth/change-password`, {
+  const res = await fetchJSON(`${API_URL}/api/auth/change-password`, {  // ← Agregué /api
     method: "POST",
     body: JSON.stringify(data),
   });

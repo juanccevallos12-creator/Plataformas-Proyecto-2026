@@ -9,7 +9,7 @@ import { API_URL } from "./config.js";
 
 // Crear un nuevo pedido
 export async function crearPedido(data) {
-  const res = await fetchJSON(`${API_URL}/pedidos`, {
+  const res = await fetchJSON(`${API_URL}/api/pedidos`, {
     method: "POST",
     body: JSON.stringify(data),
   });
@@ -18,7 +18,7 @@ export async function crearPedido(data) {
 
 // Obtener listado completo de pedidos
 export async function getPedidos() {
-  const res = await fetchJSON(`${API_URL}/pedidos`);
+  const res = await fetchJSON(`${API_URL}/api/pedidos`);
   return res.data;
 }
 
@@ -27,7 +27,7 @@ export const obtenerPedidos = getPedidos;
 
 // Obtener un pedido por ID
 export async function getPedidoById(id) {
-  const res = await fetchJSON(`${API_URL}/pedidos/${id}`);
+  const res = await fetchJSON(`${API_URL}/api/pedidos/${id}`);
   return res.data;
 }
 
@@ -36,7 +36,7 @@ export const obtenerPedidoPorId = getPedidoById;
 
 // Actualizar un pedido (estado u otros campos)
 export async function actualizarPedido(id, data) {
-  const res = await fetchJSON(`${API_URL}/pedidos/${id}`, {
+  const res = await fetchJSON(`${API_URL}/api/pedidos/${id}`, {
     method: "PUT",
     body: JSON.stringify(data),
   });
@@ -45,7 +45,7 @@ export async function actualizarPedido(id, data) {
 
 // Eliminar / cancelar un pedido
 export async function eliminarPedido(id) {
-  const res = await fetchJSON(`${API_URL}/pedidos/${id}`, {
+  const res = await fetchJSON(`${API_URL}/api/pedidos/${id}`, {
     method: "DELETE",
   });
   return res.data;

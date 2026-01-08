@@ -1,7 +1,7 @@
 // client/js/api/generic.api.js
-// API genérica reutilizable para cualquier colección
+import { API_URL } from './config.js';
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = `${API_URL}/api`;
 
 /**
  * Crea funciones CRUD para una colección específica
