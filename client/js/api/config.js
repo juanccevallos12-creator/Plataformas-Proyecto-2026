@@ -1,6 +1,13 @@
-// client/js/config.js
+// client/js/api/config.js
 
-// En producción usa la variable de entorno, en desarrollo usa localhost
-export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3800";
+// Detectar si estamos en producción por el hostname
+const isProduction = typeof window !== 'undefined' && 
+                     (window.location.hostname.includes('netlify.app') || 
+                      window.location.hostname !== 'localhost');
 
+export const API_URL = isProduction 
+  ? "https://new-era-tech-api.onrender.com"
+  : "http://localhost:3800";
+
+console.log("🔧 Entorno:", isProduction ? "PRODUCCIÓN" : "DESARROLLO");
 console.log("🔧 API URL configurada:", API_URL);
