@@ -495,9 +495,8 @@ export function closeModal() {
     editingItem = null;
   }
 }
-
 // ============================================================
-//              GUARDAR (CREAR O ACTUALIZAR)
+//              GUARDAR (CREAR O ACTUALIZAR) - CORREGIDO
 // ============================================================
 export async function saveItem(e) {
   e.preventDefault();
@@ -515,25 +514,35 @@ export async function saveItem(e) {
       data[key] = value ? parseFloat(value) : (field.min !== undefined ? field.min : 0);
     } else {
       const value = formData.get(key);
-      data[key] = value || '';
       
       // Procesar campos especiales
       if (key === 'specs' && value) {
-        // Convertir texto línea por línea a array
-        data[key] = value.split('\n').filter(line => line.trim());
+        // Convertir texto línea por línea a JSON string array
+        const specsArray = value.split('\n').filter(line => line.trim());
+        data[key] = JSON.stringify(specsArray);
       }
-      
-      if ((key === 'colores' || key === 'imagenes') && value) {
-        // Intentar parsear JSON
+      // Para colores e imagenes: validar JSON pero enviar como STRING
+      else if ((key === 'colores' || key === 'imagenes') && value && value.trim()) {
         try {
-          data[key] = JSON.parse(value);
+          // Validar que sea JSON válido
+          JSON.parse(value);
+          // Guardarlo como string (no parseado)
+          data[key] = value;
         } catch (err) {
-          // Si no es JSON válido, dejarlo como está
-          console.warn(`${key} no es JSON válido, guardando como texto`);
+          showToast(`❌ Error en ${key}: JSON inválido`);
+          console.error(`Error parseando ${key}:`, err);
+          console.log(`Valor recibido:`, value);
+          return; // Detener el guardado
         }
+      }
+      else {
+        // Campos normales
+        data[key] = value || '';
       }
     }
   }
+
+  console.log('📤 Datos a enviar:', data);
 
   const btnSave = $("#btn-save");
   if (btnSave) {
@@ -581,12 +590,14 @@ export async function saveItem(e) {
       
       await fetchData();
     } else {
-      const error = await response.json();
+      // Mostrar el error específico del servidor
+      const error = await response.json().catch(() => ({ message: 'Error desconocido' }));
+      console.error('❌ Error del servidor:', error);
       showToast(`❌ Error: ${error.message || 'No se pudo guardar'}`);
     }
   } catch (error) {
-    console.error('Error guardando:', error);
-    showToast('❌ Error al guardar');
+    console.error('❌ Error guardando:', error);
+    showToast(`❌ Error al guardar: ${error.message}`);
   } finally {
     if (btnSave) {
       btnSave.disabled = false;
