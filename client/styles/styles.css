@@ -138,6 +138,8 @@ img{max-width:100%;display:block;height:auto}
     padding:.5rem 0;
     display:none;
     animation:slideDown .3s ease;
+
+    z-index: 10000; 
   }
 
   .menu.show{
@@ -154,6 +156,30 @@ img{max-width:100%;display:block;height:auto}
     background:#1a2130;
   }
 }
+
+/* Overlay para menú móvil */
+.menu-overlay {
+  position: fixed;        /* ← cubre toda la pantalla */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  background: rgba(0, 0, 0, 0.6); /* ← oscurece fondo */
+  backdrop-filter: blur(4px);    /* ← efecto glass */
+
+  z-index: 9998;          /* ← debajo del header (9999) */
+  opacity: 0;             /* ← invisible por defecto */
+  visibility: hidden;     /* ← no clickeable */
+  transition: all 0.3s ease;
+}
+
+.menu-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+
 
 @keyframes slideDown{
   from {opacity:0; transform:translateY(-5px);}
@@ -3509,19 +3535,13 @@ img{max-width:100%;display:block;height:auto}
   }
 }
 
-/* Fix z-index conflicts */
-header {
-  z-index: 100 !important;
-}
+
 
 .checkout-page {
   z-index: 1;
 }
 
-/* Evitar que el menú hamburguesa tape el contenido */
-.menu-overlay {
-  z-index: 101 !important;
-}
+
 
 
 /* Validaciones */
@@ -3581,4 +3601,9 @@ input:invalid:not(:placeholder-shown) {
 
 input:valid:not(:placeholder-shown):not([type="checkbox"]) {
   border-color: #10b981;
+}
+
+body.menu-open {
+  overflow: hidden;
+  height: 100vh;
 }
