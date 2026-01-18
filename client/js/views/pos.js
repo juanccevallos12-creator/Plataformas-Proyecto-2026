@@ -146,42 +146,69 @@ export function POSView() {
             <button class="modal-close" id="pos-modal-close">✕</button>
           </div>
 
-          <form id="pos-form-new-client" class="pos-form">
+          <form id="pos-form-new-client" class="pos-form" novalidate>
             <div class="form-grid">
               
+              <!-- Tipo de documento: Cédula o RUC -->
+              <div class="form-group full-width">
+                <div class="documento-tipo-selector">
+                  <label class="radio-option">
+                    <input type="radio" name="tipo_documento" value="cedula" checked>
+                    <span>🪪 Cédula (10 dígitos)</span>
+                  </label>
+                  <label class="radio-option">
+                    <input type="radio" name="tipo_documento" value="ruc">
+                    <span>🏢 RUC (13 dígitos)</span>
+                  </label>
+                </div>
+              </div>
+
               <div class="form-group">
-                <label>ID Cliente *</label>
-                <input type="text" name="id" required placeholder="CLI-001">
+                <label>Cédula / RUC *</label>
+                <input type="text" name="id" required placeholder="1234567890" 
+                       maxlength="13" inputmode="numeric" autocomplete="off">
+                <span class="field-error" id="error-id"></span>
+                <span class="field-hint" id="hint-id">Ingrese 10 dígitos para cédula</span>
               </div>
 
               <div class="form-group">
                 <label>Nombre completo *</label>
-                <input type="text" name="nombre" required placeholder="Juan Pérez">
+                <input type="text" name="nombre" required placeholder="Juan Pérez" autocomplete="off">
+                <span class="field-error" id="error-nombre"></span>
               </div>
 
               <div class="form-group">
                 <label>Email</label>
-                <input type="email" name="email" placeholder="cliente@email.com">
+                <input type="email" name="email" placeholder="cliente@email.com" autocomplete="off">
+                <span class="field-error" id="error-email"></span>
               </div>
 
               <div class="form-group">
                 <label>Teléfono</label>
-                <input type="tel" name="telefono" placeholder="0999123456">
+                <input type="text" name="telefono" placeholder="0999123456" 
+                       maxlength="10" inputmode="numeric" autocomplete="off">
+                <span class="field-error" id="error-telefono"></span>
               </div>
 
               <div class="form-group full-width">
                 <label>Dirección</label>
-                <input type="text" name="direccion" placeholder="Av. Principal 123">
+                <input type="text" name="direccion" placeholder="Av. Principal 123" autocomplete="off">
               </div>
 
               <div class="form-group">
-                <label>Ciudad</label>
-                <input type="text" name="ciudad" placeholder="Quito">
+                <label>País *</label>
+                <select name="pais" id="select-pais" required>
+                  <option value="">Seleccione un país...</option>
+                </select>
+                <span class="field-error" id="error-pais"></span>
               </div>
 
               <div class="form-group">
-                <label>País</label>
-                <input type="text" name="pais" value="Ecuador" placeholder="Ecuador">
+                <label>Ciudad *</label>
+                <select name="ciudad" id="select-ciudad" required disabled>
+                  <option value="">Primero seleccione un país...</option>
+                </select>
+                <span class="field-error" id="error-ciudad"></span>
               </div>
 
               <div class="form-group">
@@ -194,7 +221,7 @@ export function POSView() {
               </div>
 
               <div class="form-group">
-                <label style="display:flex; align-items:center; gap:0.5rem;">
+                <label class="checkbox-label">
                   <input type="checkbox" name="activo" checked>
                   <span>Cliente activo</span>
                 </label>

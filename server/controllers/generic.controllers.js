@@ -18,7 +18,28 @@ export function createGenericController(modelName) {
           });
         }
         
+        // ✅ NUEVO: Construir filtros desde query params
+        const where = {};
+        const queryParams = req.query;
+        
+        // Filtrar parámetros válidos (excluir paginación, ordenamiento, etc.)
+        const excludedParams = ['page', 'limit', 'sort', 'order'];
+        
+        for (const [key, value] of Object.entries(queryParams)) {
+          if (!excludedParams.includes(key) && value !== undefined && value !== '') {
+            // Si el valor es 'true' o 'false', convertir a booleano
+            if (value === 'true') {
+              where[key] = true;
+            } else if (value === 'false') {
+              where[key] = false;
+            } else {
+              where[key] = value;
+            }
+          }
+        }
+        
         const items = await prismaModel.findMany({
+          where,
           orderBy: { createdAt: 'desc' }
         });
         

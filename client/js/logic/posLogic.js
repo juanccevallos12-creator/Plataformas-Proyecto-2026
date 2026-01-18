@@ -2,6 +2,8 @@
 
 import { API_URL } from "../api/config.js";
 import { $, showToast } from "../utils.js";
+import { getPaises } from "../api/paises.js";
+import { getCiudades } from "../api/ciudades.js";
 
 // Estado del POS
 let currentClient = {
@@ -13,6 +15,10 @@ let currentClient = {
 let invoiceItems = [];
 let allProducts = [];
 let searchTimeout = null;
+
+// Cache para países y ciudades
+let paisesCache = [];
+let ciudadesCache = [];
 
 // ============================================================
 //                    INICIALIZACIÓN
@@ -31,6 +37,9 @@ export function initPOS() {
   
   // Event listeners
   setupEventListeners();
+  
+  // Cargar países para el formulario
+  loadPaises();
 }
 
 // ============================================================
@@ -329,6 +338,62 @@ function calculateTotals() {
 }
 
 // ============================================================
+//                    PAÍSES Y CIUDADES
+// ============================================================
+async function loadPaises() {
+  try {
+    // Usar la API existente del proyecto
+    paisesCache = await getPaises();
+    
+    const selectPais = $("#select-pais");
+    if (selectPais) {
+      selectPais.innerHTML = '<option value="">Seleccione un país...</option>' +
+        paisesCache.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+    }
+    
+    console.log('✅ Países cargados:', paisesCache.length);
+  } catch (error) {
+    console.error('❌ Error cargando países:', error);
+  }
+}
+
+async function loadCiudades(paisId) {
+  const selectCiudad = $("#select-ciudad");
+  if (!selectCiudad) return;
+  
+  if (!paisId) {
+    selectCiudad.innerHTML = '<option value="">Primero seleccione un país...</option>';
+    selectCiudad.disabled = true;
+    return;
+  }
+  
+  try {
+    selectCiudad.innerHTML = '<option value="">Cargando ciudades...</option>';
+    selectCiudad.disabled = true;
+    
+    // Usar fetch con query param para filtrar por país
+    // El campo en tu tabla es "paisId" (camelCase según Prisma)
+    const response = await fetch(`${API_URL}/api/ciudades?paisId=${paisId}`);
+    const result = await response.json();
+    
+    ciudadesCache = result.data || [];
+    
+    if (ciudadesCache.length === 0) {
+      selectCiudad.innerHTML = '<option value="">No hay ciudades disponibles</option>';
+    } else {
+      selectCiudad.innerHTML = '<option value="">Seleccione una ciudad...</option>' +
+        ciudadesCache.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
+      selectCiudad.disabled = false;
+    }
+    
+    console.log('✅ Ciudades cargadas:', ciudadesCache.length);
+  } catch (error) {
+    console.error('❌ Error cargando ciudades:', error);
+    selectCiudad.innerHTML = '<option value="">Error al cargar ciudades</option>';
+  }
+}
+
+// ============================================================
 //                    CLIENTES
 // ============================================================
 let clientSearchTimeout = null;
@@ -417,18 +482,30 @@ function selectClient(client) {
   showToast(`✅ Cliente seleccionado: ${client.nombre}`);
 }
 
-// Modal nuevo cliente
+// ============================================================
+//                    MODAL NUEVO CLIENTE
+// ============================================================
 function openNewClientModal() {
   const modal = $("#pos-modal-new-client");
   if (modal) {
     modal.classList.add('show');
     
-    // Generar ID automático
-    const idInput = document.querySelector('#pos-form-new-client input[name="id"]');
-    if (idInput && !idInput.value) {
-      const randomId = `CLI-${Date.now().toString().slice(-6)}`;
-      idInput.value = randomId;
+    // Resetear el formulario
+    const form = document.getElementById('pos-form-new-client');
+    if (form) {
+      form.reset();
+      clearAllFieldErrors();
     }
+    
+    // Resetear el select de ciudad
+    const selectCiudad = $("#select-ciudad");
+    if (selectCiudad) {
+      selectCiudad.innerHTML = '<option value="">Primero seleccione un país...</option>';
+      selectCiudad.disabled = true;
+    }
+    
+    // Configurar el hint para cédula por defecto
+    updateDocumentoHint('cedula');
   }
 }
 
@@ -437,7 +514,142 @@ function closeNewClientModal() {
   if (modal) {
     modal.classList.remove('show');
     document.getElementById('pos-form-new-client')?.reset();
+    clearAllFieldErrors();
   }
+}
+
+// ============================================================
+//                    VALIDACIONES DE FORMULARIO
+// ============================================================
+function clearAllFieldErrors() {
+  document.querySelectorAll('.field-error').forEach(el => {
+    el.textContent = '';
+    el.style.display = 'none';
+  });
+  document.querySelectorAll('.form-group.has-error').forEach(el => {
+    el.classList.remove('has-error');
+  });
+  document.querySelectorAll('input.input-error, select.input-error').forEach(el => {
+    el.classList.remove('input-error');
+  });
+}
+
+function showFieldError(fieldName, message) {
+  const errorEl = $(`#error-${fieldName}`);
+  const inputEl = document.querySelector(`[name="${fieldName}"]`);
+  
+  if (errorEl) {
+    errorEl.textContent = message;
+    errorEl.style.display = 'block';
+  }
+  
+  if (inputEl) {
+    inputEl.classList.add('input-error');
+    inputEl.closest('.form-group')?.classList.add('has-error');
+  }
+}
+
+function clearFieldError(fieldName) {
+  const errorEl = $(`#error-${fieldName}`);
+  const inputEl = document.querySelector(`[name="${fieldName}"]`);
+  
+  if (errorEl) {
+    errorEl.textContent = '';
+    errorEl.style.display = 'none';
+  }
+  
+  if (inputEl) {
+    inputEl.classList.remove('input-error');
+    inputEl.closest('.form-group')?.classList.remove('has-error');
+  }
+}
+
+function updateDocumentoHint(tipo) {
+  const hintEl = $("#hint-id");
+  const inputEl = document.querySelector('[name="id"]');
+  
+  if (tipo === 'cedula') {
+    if (hintEl) hintEl.textContent = 'Ingrese 10 dígitos para cédula';
+    if (inputEl) {
+      inputEl.maxLength = 10;
+      inputEl.placeholder = '1234567890';
+    }
+  } else {
+    if (hintEl) hintEl.textContent = 'Ingrese 13 dígitos para RUC';
+    if (inputEl) {
+      inputEl.maxLength = 13;
+      inputEl.placeholder = '1234567890001';
+    }
+  }
+}
+
+function validateForm(formData) {
+  let isValid = true;
+  clearAllFieldErrors();
+  
+  const tipoDocumento = formData.get('tipo_documento');
+  const id = formData.get('id')?.trim();
+  const nombre = formData.get('nombre')?.trim();
+  const email = formData.get('email')?.trim();
+  const telefono = formData.get('telefono')?.trim();
+  const pais = formData.get('pais');
+  const ciudad = formData.get('ciudad');
+  
+  // Validar Cédula/RUC
+  if (!id) {
+    showFieldError('id', 'La cédula/RUC es obligatoria');
+    isValid = false;
+  } else if (!/^\d+$/.test(id)) {
+    showFieldError('id', 'Solo se permiten números');
+    isValid = false;
+  } else if (tipoDocumento === 'cedula' && id.length !== 10) {
+    showFieldError('id', 'La cédula debe tener exactamente 10 dígitos');
+    isValid = false;
+  } else if (tipoDocumento === 'ruc' && id.length !== 13) {
+    showFieldError('id', 'El RUC debe tener exactamente 13 dígitos');
+    isValid = false;
+  }
+  
+  // Validar Nombre (obligatorio)
+  if (!nombre) {
+    showFieldError('nombre', 'El nombre es obligatorio');
+    isValid = false;
+  } else if (nombre.length < 3) {
+    showFieldError('nombre', 'El nombre debe tener al menos 3 caracteres');
+    isValid = false;
+  }
+  
+  // Validar Email (opcional pero si se ingresa debe ser válido)
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showFieldError('email', 'Ingrese un email válido');
+    isValid = false;
+  }
+  
+  // Validar Teléfono (opcional pero si se ingresa solo números)
+  if (telefono && !/^\d+$/.test(telefono)) {
+    showFieldError('telefono', 'El teléfono solo puede contener números');
+    isValid = false;
+  }
+  
+  // Validar País
+  if (!pais) {
+    showFieldError('pais', 'Seleccione un país');
+    isValid = false;
+  }
+  
+  // Validar Ciudad
+  if (!ciudad) {
+    showFieldError('ciudad', 'Seleccione una ciudad');
+    isValid = false;
+  }
+  
+  return isValid;
+}
+
+// Función para filtrar solo números en inputs
+function filterNumericInput(e) {
+  const value = e.target.value;
+  e.target.value = value.replace(/[^\d]/g, '');
 }
 
 async function saveNewClient(e) {
@@ -447,18 +659,26 @@ async function saveNewClient(e) {
   const formData = new FormData(form);
   const saveBtn = $("#pos-form-save");
   
+  // Validar formulario
+  if (!validateForm(formData)) {
+    showToast('⚠️ Por favor corrige los errores del formulario');
+    return;
+  }
+  
+  // Obtener el nombre del país seleccionado
+  const selectPais = $("#select-pais");
+  const paisNombre = selectPais?.options[selectPais.selectedIndex]?.text || '';
+  
   const data = {
-    id: formData.get('id'),
-    nombre: formData.get('nombre'),
-    email: formData.get('email') || null,
-    telefono: formData.get('telefono') || null,
-    direccion: formData.get('direccion') || 'No especificada',
-    ciudad: formData.get('ciudad') || 'No especificada',
-    pais: formData.get('pais') || 'Ecuador',
+    id: formData.get('id').trim(),
+    nombre: formData.get('nombre').trim(),
+    email: formData.get('email')?.trim() || null,
+    telefono: formData.get('telefono')?.trim() || null,
+    direccion: formData.get('direccion')?.trim() || 'No especificada',
+    ciudad: formData.get('ciudad'),
+    pais: paisNombre,
     tipo_cliente: formData.get('tipo_cliente'),
-    activo: formData.get('activo') === 'on',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    activo: formData.get('activo') === 'on'
   };
   
   if (saveBtn) {
@@ -537,15 +757,7 @@ async function generateInvoice() {
       subtotal: subtotal.toFixed(2),
       impuestos: iva.toFixed(2),
       total: total.toFixed(2),
-      estado: 'emitida',
-      metodo_pago: paymentMethod.value,
-      items: invoiceItems.map(item => ({
-        producto_id: item.id,
-        nombre: item.nombre,
-        cantidad: item.cantidad,
-        precio: item.precio,
-        subtotal: (item.cantidad * item.precio).toFixed(2)
-      }))
+      estado: 'emitida'
     };
     
     console.log('📄 Generando factura:', invoiceData);
@@ -629,8 +841,8 @@ function clearInvoice() {
   }
   
   // Reset método de pago
-  const effectivoRadio = document.querySelector('input[name="payment-method"][value="efectivo"]');
-  if (effectivoRadio) effectivoRadio.checked = true;
+  const efectivoRadio = document.querySelector('input[name="payment-method"][value="efectivo"]');
+  if (efectivoRadio) efectivoRadio.checked = true;
 }
 
 // ============================================================
@@ -676,6 +888,77 @@ function setupEventListeners() {
   
   // Form nuevo cliente
   $("#pos-form-new-client")?.addEventListener('submit', saveNewClient);
+  
+  // Selector de tipo de documento (Cédula/RUC)
+  document.querySelectorAll('input[name="tipo_documento"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      updateDocumentoHint(e.target.value);
+      clearFieldError('id');
+      // Limpiar el campo cuando cambia el tipo
+      const idInput = document.querySelector('[name="id"]');
+      if (idInput) idInput.value = '';
+    });
+  });
+  
+  // Filtrar solo números en campo ID (Cédula/RUC)
+  const idInput = document.querySelector('[name="id"]');
+  if (idInput) {
+    idInput.addEventListener('input', filterNumericInput);
+    idInput.addEventListener('blur', () => {
+      const formData = new FormData(document.getElementById('pos-form-new-client'));
+      const tipoDocumento = formData.get('tipo_documento');
+      const id = idInput.value.trim();
+      
+      if (id) {
+        clearFieldError('id');
+        if (!/^\d+$/.test(id)) {
+          showFieldError('id', 'Solo se permiten números');
+        } else if (tipoDocumento === 'cedula' && id.length !== 10) {
+          showFieldError('id', 'La cédula debe tener exactamente 10 dígitos');
+        } else if (tipoDocumento === 'ruc' && id.length !== 13) {
+          showFieldError('id', 'El RUC debe tener exactamente 13 dígitos');
+        }
+      }
+    });
+  }
+  
+  // Filtrar solo números en campo teléfono
+  const telefonoInput = document.querySelector('[name="telefono"]');
+  if (telefonoInput) {
+    telefonoInput.addEventListener('input', filterNumericInput);
+  }
+  
+  // Validar nombre en tiempo real
+  const nombreInput = document.querySelector('[name="nombre"]');
+  if (nombreInput) {
+    nombreInput.addEventListener('blur', () => {
+      const value = nombreInput.value.trim();
+      clearFieldError('nombre');
+      if (!value) {
+        showFieldError('nombre', 'El nombre es obligatorio');
+      } else if (value.length < 3) {
+        showFieldError('nombre', 'El nombre debe tener al menos 3 caracteres');
+      }
+    });
+  }
+  
+  // Cargar ciudades cuando cambia el país
+  const selectPais = $("#select-pais");
+  if (selectPais) {
+    selectPais.addEventListener('change', (e) => {
+      const paisId = e.target.value;
+      loadCiudades(paisId);
+      clearFieldError('pais');
+    });
+  }
+  
+  // Limpiar error de ciudad cuando se selecciona
+  const selectCiudad = $("#select-ciudad");
+  if (selectCiudad) {
+    selectCiudad.addEventListener('change', () => {
+      clearFieldError('ciudad');
+    });
+  }
   
   // Limpiar factura
   $("#pos-clear-invoice")?.addEventListener('click', () => {

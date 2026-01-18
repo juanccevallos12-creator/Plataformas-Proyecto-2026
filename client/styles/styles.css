@@ -4223,3 +4223,200 @@ body.menu-open {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   ESTILOS ADICIONALES PARA VALIDACIONES DEL FORMULARIO
+   Agregar estos estilos a tu archivo pos.css o styles.css
+   ============================================================ */
+
+/* Selector de tipo de documento (Cédula/RUC) */
+.documento-tipo-selector {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1rem;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.documento-tipo-selector .radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.documento-tipo-selector .radio-option:hover {
+  background: rgba(59, 130, 246, 0.15);
+}
+
+.documento-tipo-selector .radio-option input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #3b82f6;
+}
+
+.documento-tipo-selector .radio-option span {
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+/* Estados de error en inputs */
+.form-group.has-error input,
+.form-group.has-error select,
+input.input-error,
+select.input-error {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Mensaje de error debajo del campo */
+.field-error {
+  display: none;
+  color: #ef4444;
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
+  padding-left: 0.25rem;
+  font-weight: 500;
+}
+
+.field-error::before {
+  content: '⚠ ';
+}
+
+/* Hint/ayuda debajo del campo */
+.field-hint {
+  display: block;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  padding-left: 0.25rem;
+}
+
+/* Ocultar hint cuando hay error */
+.form-group.has-error .field-hint {
+  display: none;
+}
+
+/* Checkbox label mejorado */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #3b82f6;
+}
+
+/* Select deshabilitado */
+select:disabled {
+  background-color: rgba(100, 116, 139, 0.2) !important;
+  color: #64748b !important;
+  cursor: not-allowed;
+}
+
+/* Estados de validación exitosa (opcional) */
+.form-group.has-success input,
+.form-group.has-success select {
+  border-color: #22c55e !important;
+}
+
+/* Mejoras al formulario general */
+.pos-form .form-group label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.pos-form .form-group label::after {
+  content: '';
+}
+
+/* Asterisco rojo para campos obligatorios - solo en labels con * */
+.pos-form .form-group label:has(+ input[required])::after,
+.pos-form .form-group label:has(+ select[required])::after {
+  content: ' *';
+  color: #ef4444;
+}
+
+/* Alternativa si :has() no está soportado */
+.form-group label[data-required]::after {
+  content: ' *';
+  color: #ef4444;
+}
+
+/* Estilos para inputs del formulario */
+.pos-form input[type="text"],
+.pos-form input[type="email"],
+.pos-form input[type="tel"],
+.pos-form select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(30, 41, 59, 0.8);
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  border-radius: 8px;
+  color: #f1f5f9;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.pos-form input:focus,
+.pos-form select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.pos-form input::placeholder {
+  color: #64748b;
+}
+
+/* Grid del formulario */
+.pos-form .form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.pos-form .form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Acciones del modal */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+/* Toast mejorado para errores */
+.toast-error {
+  background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+}
+
+.toast-success {
+  background: linear-gradient(135deg, #16a34a, #15803d) !important;
+}
+
+.toast-warning {
+  background: linear-gradient(135deg, #d97706, #b45309) !important;
+}
