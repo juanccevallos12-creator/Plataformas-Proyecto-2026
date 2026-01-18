@@ -3535,7 +3535,10 @@ img{max-width:100%;display:block;height:auto}
   }
 }
 
-
+/* Fix z-index conflicts */
+header {
+  z-index: 100 !important;
+}
 
 .checkout-page {
   z-index: 1;
@@ -3606,4 +3609,617 @@ input:valid:not(:placeholder-shown):not([type="checkbox"]) {
 body.menu-open {
   overflow: hidden;
   height: 100vh;
+}
+
+/* ============================================================
+   POS - PUNTO DE VENTA
+   ============================================================ */
+
+/* Contenedor principal del POS */
+.pos-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* ============================================================
+   HEADER DEL POS
+   ============================================================ */
+.pos-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+}
+
+.pos-header-left h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  color: var(--primary);
+}
+
+.pos-header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.pos-datetime {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+#pos-time {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+}
+
+.pos-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pos-user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg);
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.pos-user-icon {
+  font-size: 1.2rem;
+}
+
+/* ============================================================
+   MAIN - LAYOUT DE 2 COLUMNAS
+   ============================================================ */
+.pos-main {
+  display: grid;
+  grid-template-columns: 1fr 450px;
+  gap: 0;
+  height: calc(100vh - 80px);
+  overflow: hidden;
+}
+
+/* ============================================================
+   PANEL DE PRODUCTOS (IZQUIERDA)
+   ============================================================ */
+.pos-products-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border-right: 2px solid var(--border);
+  overflow: hidden;
+}
+
+.pos-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.pos-section-header h2 {
+  font-size: 1.2rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pos-search-box {
+  padding: 1rem 1.5rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.pos-search-box input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.pos-search-box input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* Grid de productos */
+.pos-products-grid {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  align-content: start;
+}
+
+.pos-product-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.pos-product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  border-color: var(--primary);
+}
+
+.pos-product-image {
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pos-product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pos-product-info {
+  padding: 0.75rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pos-product-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pos-product-brand {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.pos-product-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+.pos-product-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.pos-product-stock {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: var(--bg);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.btn-add-product {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  font-size: 0.85rem;
+}
+
+/* Estados de carga/error */
+.pos-loading,
+.pos-empty,
+.pos-error {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+}
+
+.pos-error {
+  color: #ef4444;
+}
+
+/* ============================================================
+   PANEL DE FACTURA (DERECHA)
+   ============================================================ */
+.pos-invoice-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  overflow-y: auto;
+}
+
+.pos-section {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Cliente */
+.pos-client-selector {
+  position: relative;
+}
+
+.pos-client-selector input {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  margin-bottom: 0.75rem;
+}
+
+.pos-client-selected {
+  padding: 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pos-client-selected strong {
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.pos-client-selected span {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* Autocomplete de clientes */
+.pos-client-autocomplete {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.pos-client-option {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: background 0.2s;
+}
+
+.pos-client-option:hover {
+  background: var(--bg);
+}
+
+.pos-client-option strong {
+  color: var(--text);
+}
+
+.pos-client-option span {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Items de la factura */
+.pos-items-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.pos-invoice-items {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pos-empty-invoice {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+}
+
+.pos-hint {
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.pos-invoice-item {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.pos-item-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.pos-item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pos-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pos-item-info h4 {
+  font-size: 0.9rem;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.3;
+}
+
+.pos-item-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Control de cantidad */
+.pos-quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-qty {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-qty:hover {
+  background: #2563eb;
+}
+
+.pos-qty-input {
+  width: 50px;
+  text-align: center;
+  padding: 0.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Control de precio */
+.pos-price-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pos-price-control label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.pos-price-input {
+  width: 80px;
+  padding: 0.25rem 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Subtotal y eliminar */
+.pos-item-subtotal {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.pos-item-subtotal strong {
+  font-size: 1.1rem;
+  color: var(--primary);
+}
+
+.btn-remove-item {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.btn-remove-item:hover {
+  opacity: 1;
+}
+
+/* Totales */
+.pos-totals {
+  padding: 1rem 1.5rem;
+  background: var(--bg);
+  border-top: 2px solid var(--border);
+  border-bottom: 2px solid var(--border);
+}
+
+.pos-total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.pos-total-final {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--primary);
+  border-top: 2px solid var(--border);
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+}
+
+/* Métodos de pago */
+.pos-payment-methods {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.pos-payment-option {
+  flex: 1;
+  min-width: 100px;
+  padding: 0.75rem;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pos-payment-option:hover {
+  border-color: var(--primary);
+}
+
+.pos-payment-option input[type="radio"] {
+  cursor: pointer;
+}
+
+.pos-payment-option input[type="radio"]:checked + span {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Acciones */
+.pos-actions {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: var(--surface);
+}
+
+.btn-lg {
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* ============================================================
+   MODAL NUEVO CLIENTE
+   ============================================================ */
+.pos-form .form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.pos-form .full-width {
+  grid-column: 1 / -1;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1024px) {
+  .pos-main {
+    grid-template-columns: 1fr 400px;
+  }
+  
+  .pos-products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .pos-header {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .pos-header-center {
+    order: -1;
+  }
+  
+  .pos-main {
+    grid-template-columns: 1fr;
+  }
+  
+  .pos-products-panel {
+    border-right: none;
+    border-bottom: 2px solid var(--border);
+  }
+  
+  .pos-actions {
+    grid-template-columns: 1fr;
+  }
 }

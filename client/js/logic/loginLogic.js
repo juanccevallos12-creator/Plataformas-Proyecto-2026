@@ -70,7 +70,7 @@ export function renderLogin() {
             location.hash = "#/admin";
           } else if (user.rol === "vendedor") {
             console.log('🔄 Redirigiendo a productos...'); // DEBUG
-            location.hash = "#/productos";
+            location.hash = "#/pos";
           } else {
             console.log('🔄 Redirigiendo a home...'); // DEBUG
             location.hash = "#/";
