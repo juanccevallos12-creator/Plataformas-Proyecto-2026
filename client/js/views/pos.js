@@ -219,7 +219,11 @@ export function POSView() {
   `;
 }
 
-export function initPOS() {
+// ← ESTA FUNCIÓN DEBE IMPORTAR LA LÓGICA
+export async function initPOS() {
   console.log("🏪 Inicializando POS...");
-  // La lógica se implementará en posLogic.js
+  
+  // Importar dinámicamente la lógica
+  const { initPOS: initPOSLogic } = await import('../logic/posLogic.js');
+  initPOSLogic();
 }
