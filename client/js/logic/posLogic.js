@@ -230,15 +230,11 @@ function renderInvoiceItems() {
               <button class="btn-qty-sm btn-qty-plus" data-index="${index}">+</button>
             </div>
           </div>
-          <div class="col-name">
+          <div class="col-name" title="${item.nombre}">
             <span class="item-name">${item.nombre}</span>
           </div>
-          <div class="col-price">
-            <span>$${item.precio.toFixed(2)}</span>
-          </div>
-          <div class="col-subtotal">
-            <strong>$${(item.cantidad * item.precio).toFixed(2)}</strong>
-          </div>
+          <div class="col-price">$${item.precio.toFixed(2)}</div>
+          <div class="col-subtotal">$${(item.cantidad * item.precio).toFixed(2)}</div>
           <div class="col-actions">
             <button class="btn-remove-sm" data-index="${index}" title="Eliminar">🗑️</button>
           </div>
