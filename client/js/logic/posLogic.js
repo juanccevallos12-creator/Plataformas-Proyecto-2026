@@ -114,33 +114,46 @@ async function loadProducts(searchTerm = '') {
       return;
     }
     
-    grid.innerHTML = filtered.map(product => `
-      <div class="pos-product-card" data-product-id="${product.id}">
-        <div class="pos-product-image">
-          <img src="${product.imagen || './assets/images/placeholder.jpg'}" 
-               alt="${product.nombre}"
-               onerror="this.src='./assets/images/placeholder.jpg'">
-        </div>
-        <div class="pos-product-info">
-          <h3 class="pos-product-name">${product.nombre}</h3>
-          <p class="pos-product-brand">${product.marca || 'Sin marca'}</p>
-          <div class="pos-product-details">
-            <span class="pos-product-price">$${parseFloat(product.precio).toFixed(2)}</span>
-            <span class="pos-product-stock">Stock: ${product.stock}</span>
+    // Guardar productos en un Map para acceso rápido
+    window.posProductsMap = new Map();
+    
+    grid.innerHTML = filtered.map(product => {
+      // Guardar producto en el Map usando su ID
+      window.posProductsMap.set(product.id, product);
+      
+      return `
+        <div class="pos-product-card" data-product-id="${product.id}">
+          <div class="pos-product-image">
+            <img src="${product.imagen || './assets/images/placeholder.jpg'}" 
+                 alt="${product.nombre}"
+                 onerror="this.src='./assets/images/placeholder.jpg'">
           </div>
+          <div class="pos-product-info">
+            <h3 class="pos-product-name">${product.nombre}</h3>
+            <p class="pos-product-brand">${product.marca || 'Sin marca'}</p>
+            <div class="pos-product-details">
+              <span class="pos-product-price">$${parseFloat(product.precio).toFixed(2)}</span>
+              <span class="pos-product-stock">Stock: ${product.stock}</span>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-add-product" 
+                  data-product-id="${product.id}">
+            ➕ Agregar
+          </button>
         </div>
-        <button class="btn btn-primary btn-add-product" 
-                data-product='${JSON.stringify(product)}'>
-          ➕ Agregar
-        </button>
-      </div>
-    `).join('');
+      `;
+    }).join('');
     
     // Event listeners para botones de agregar
     grid.querySelectorAll('.btn-add-product').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const productData = JSON.parse(e.target.dataset.product);
-        addProductToInvoice(productData);
+        const productId = e.target.dataset.productId;
+        const productData = window.posProductsMap.get(productId);
+        if (productData) {
+          addProductToInvoice(productData);
+        } else {
+          showToast('❌ Error al agregar producto');
+        }
       });
     });
     
@@ -198,54 +211,52 @@ function renderInvoiceItems() {
     return;
   }
   
-  container.innerHTML = invoiceItems.map((item, index) => `
-    <div class="pos-invoice-item" data-index="${index}">
-      <div class="pos-item-image">
-        <img src="${item.imagen || './assets/images/placeholder.jpg'}" 
-             alt="${item.nombre}"
-             onerror="this.src='./assets/images/placeholder.jpg'">
+  // Renderizar items en formato lista compacta estilo caja
+  container.innerHTML = `
+    <div class="pos-items-list">
+      <div class="pos-items-header">
+        <span class="col-qty">Cant.</span>
+        <span class="col-name">Producto</span>
+        <span class="col-price">P.Unit</span>
+        <span class="col-subtotal">Subtotal</span>
+        <span class="col-actions"></span>
       </div>
-      
-      <div class="pos-item-info">
-        <h4>${item.nombre}</h4>
-        <div class="pos-item-controls">
-          <div class="pos-quantity-control">
-            <button class="btn-qty btn-qty-minus" data-index="${index}">−</button>
-            <input type="number" 
-                   class="pos-qty-input" 
-                   value="${item.cantidad}" 
-                   min="1" 
-                   max="${item.stock}"
-                   data-index="${index}">
-            <button class="btn-qty btn-qty-plus" data-index="${index}">+</button>
+      ${invoiceItems.map((item, index) => `
+        <div class="pos-item-row" data-index="${index}">
+          <div class="col-qty">
+            <div class="pos-qty-compact">
+              <button class="btn-qty-sm btn-qty-minus" data-index="${index}">−</button>
+              <span class="qty-value">${item.cantidad}</span>
+              <button class="btn-qty-sm btn-qty-plus" data-index="${index}">+</button>
+            </div>
           </div>
-          
-          <div class="pos-price-control">
-            <label>Precio:</label>
-            <input type="number" 
-                   class="pos-price-input" 
-                   value="${item.precio.toFixed(2)}" 
-                   step="0.01"
-                   min="0.01"
-                   data-index="${index}">
+          <div class="col-name">
+            <span class="item-name">${item.nombre}</span>
+          </div>
+          <div class="col-price">
+            <span>$${item.precio.toFixed(2)}</span>
+          </div>
+          <div class="col-subtotal">
+            <strong>$${(item.cantidad * item.precio).toFixed(2)}</strong>
+          </div>
+          <div class="col-actions">
+            <button class="btn-remove-sm" data-index="${index}" title="Eliminar">🗑️</button>
           </div>
         </div>
-      </div>
-      
-      <div class="pos-item-subtotal">
-        <strong>$${(item.cantidad * item.precio).toFixed(2)}</strong>
-        <button class="btn-remove-item" data-index="${index}">🗑️</button>
-      </div>
+      `).join('')}
     </div>
-  `).join('');
+    <div class="pos-items-count">
+      📦 ${invoiceItems.length} producto(s) · ${invoiceItems.reduce((sum, item) => sum + item.cantidad, 0)} unidad(es)
+    </div>
+  `;
   
   // Event listeners para controles de items
   setupItemControls();
 }
 
 function setupItemControls() {
-  // Botones de cantidad
-  document.querySelectorAll('.btn-qty-minus').forEach(btn => {
+  // Botones de cantidad (versión compacta)
+  document.querySelectorAll('.btn-qty-minus, .btn-qty-sm.btn-qty-minus').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const index = parseInt(e.target.dataset.index);
       if (invoiceItems[index].cantidad > 1) {
@@ -256,7 +267,7 @@ function setupItemControls() {
     });
   });
   
-  document.querySelectorAll('.btn-qty-plus').forEach(btn => {
+  document.querySelectorAll('.btn-qty-plus, .btn-qty-sm.btn-qty-plus').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const index = parseInt(e.target.dataset.index);
       if (invoiceItems[index].cantidad < invoiceItems[index].stock) {
@@ -269,7 +280,7 @@ function setupItemControls() {
     });
   });
   
-  // Input de cantidad manual
+  // Input de cantidad manual (si existe)
   document.querySelectorAll('.pos-qty-input').forEach(input => {
     input.addEventListener('change', (e) => {
       const index = parseInt(e.target.dataset.index);
@@ -288,7 +299,7 @@ function setupItemControls() {
     });
   });
   
-  // Input de precio manual
+  // Input de precio manual (si existe)
   document.querySelectorAll('.pos-price-input').forEach(input => {
     input.addEventListener('change', (e) => {
       const index = parseInt(e.target.dataset.index);
@@ -304,8 +315,8 @@ function setupItemControls() {
     });
   });
   
-  // Botones de eliminar
-  document.querySelectorAll('.btn-remove-item').forEach(btn => {
+  // Botones de eliminar (ambas versiones)
+  document.querySelectorAll('.btn-remove-item, .btn-remove-sm').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const index = parseInt(e.target.dataset.index);
       const itemName = invoiceItems[index].nombre;
