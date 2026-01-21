@@ -4694,3 +4694,380 @@ select:disabled {
     max-height: 250px;
   }
 }
+
+/* ============================================================
+   ESTILOS PARA MODALES DE PAGO
+   Agregar al final de pos.css
+   ============================================================ */
+
+/* Modal de pago */
+.modal-pago {
+  max-width: 500px;
+}
+
+.pago-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ============================================================
+   LOGOS DE TARJETAS
+   ============================================================ */
+.tarjetas-logos {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.logo-tarjeta {
+  height: 30px;
+  width: auto;
+  object-fit: contain;
+  filter: grayscale(30%);
+  opacity: 0.8;
+  transition: all 0.2s ease;
+}
+
+.logo-tarjeta:hover,
+.logo-tarjeta.active {
+  filter: grayscale(0%);
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* ============================================================
+   INFO DE CUOTAS
+   ============================================================ */
+.info-cuotas {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(147, 51, 234, 0.15));
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-around;
+}
+
+.cuota-detalle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.cuota-label {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.cuota-valor {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #22c55e;
+}
+
+/* ============================================================
+   PREVIEW DE TARJETA
+   ============================================================ */
+.tarjeta-preview {
+  background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 50%, #1e293b 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  color: #fff;
+  position: relative;
+  min-height: 180px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.tarjeta-preview::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.tarjeta-chip {
+  width: 50px;
+  height: 40px;
+  background: linear-gradient(135deg, #ffd700 0%, #b8860b 100%);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.tarjeta-chip::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 35px;
+  height: 25px;
+  border: 2px solid rgba(0,0,0,0.3);
+  border-radius: 4px;
+}
+
+.tarjeta-numero {
+  font-size: 1.4rem;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 3px;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.tarjeta-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.tarjeta-nombre {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.9;
+}
+
+.tarjeta-vence {
+  font-size: 0.9rem;
+  font-family: 'Courier New', monospace;
+}
+
+/* ============================================================
+   CAMPOS DE FORMULARIO TARJETA
+   ============================================================ */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.pago-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.pago-form .form-group label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.pago-form .form-group input,
+.pago-form .form-group select,
+.pago-form .form-group textarea {
+  padding: 0.75rem 1rem;
+  background: rgba(30, 41, 59, 0.8);
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  border-radius: 8px;
+  color: #f1f5f9;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.pago-form .form-group input:focus,
+.pago-form .form-group select:focus,
+.pago-form .form-group textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.pago-form .form-group input::placeholder {
+  color: #64748b;
+}
+
+/* Input de número de tarjeta */
+#numero-tarjeta {
+  font-family: 'Courier New', monospace;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+}
+
+/* ============================================================
+   MENSAJE DE SEGURIDAD
+   ============================================================ */
+.seguridad-mensaje {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #22c55e;
+}
+
+.icono-candado {
+  font-size: 1.1rem;
+}
+
+/* ============================================================
+   CUENTA DESTINO (TRANSFERENCIA)
+   ============================================================ */
+.cuenta-destino {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(59, 130, 246, 0.1));
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.cuenta-destino h3 {
+  font-size: 1rem;
+  margin: 0 0 1rem 0;
+  color: #22c55e;
+}
+
+.cuenta-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cuenta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(100, 116, 139, 0.15);
+}
+
+.cuenta-row:last-child {
+  border-bottom: none;
+}
+
+.cuenta-row .cuenta-label {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  min-width: 100px;
+}
+
+.cuenta-row .cuenta-valor {
+  font-weight: 600;
+  color: #e2e8f0;
+  flex: 1;
+}
+
+.btn-copiar {
+  background: rgba(59, 130, 246, 0.2);
+  border: none;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.btn-copiar:hover {
+  background: rgba(59, 130, 246, 0.4);
+}
+
+/* ============================================================
+   SEPARADOR
+   ============================================================ */
+.separador-pago {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.separador-pago::before,
+.separador-pago::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(100, 116, 139, 0.3);
+}
+
+.separador-pago span {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 600px) {
+  .modal-pago {
+    max-width: 95%;
+    margin: 1rem;
+  }
+  
+  .tarjetas-logos {
+    gap: 0.5rem;
+  }
+  
+  .logo-tarjeta {
+    height: 24px;
+  }
+  
+  .tarjeta-preview {
+    padding: 1rem;
+    min-height: 150px;
+  }
+  
+  .tarjeta-numero {
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .info-cuotas {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+/* ============================================================
+   ANIMACIONES
+   ============================================================ */
+@keyframes cardFlip {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(180deg); }
+}
+
+.tarjeta-preview.flip {
+  animation: cardFlip 0.3s ease;
+}
+
+/* Procesando pago */
+.btn-procesar-pago.loading {
+  position: relative;
+  color: transparent;
+}
+
+.btn-procesar-pago.loading::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: 50%;
+  left: 50%;
+  margin-left: -10px;
+  margin-top: -10px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

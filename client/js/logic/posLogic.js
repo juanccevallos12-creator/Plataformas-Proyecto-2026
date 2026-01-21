@@ -746,6 +746,186 @@ async function generateInvoice() {
     return;
   }
   
+  // Calcular totales
+  const subtotal = invoiceItems.reduce((sum, item) => 
+    sum + (item.cantidad * item.precio), 0
+  );
+  const iva = subtotal * 0.15;
+  const total = subtotal + iva;
+  
+  // Guardar total para uso en modales
+  window.currentInvoiceTotal = total;
+  
+  // Según el método de pago, mostrar modal o procesar directamente
+  switch (paymentMethod.value) {
+    case 'efectivo':
+      // Pago en efectivo - procesar directamente
+      await processPayment('efectivo', { tipo: 'contado' });
+      break;
+      
+    case 'tarjeta':
+      // Mostrar modal de tarjeta
+      openModalTarjeta(total);
+      break;
+      
+    case 'transferencia':
+      // Mostrar modal de transferencia
+      openModalTransferencia(total);
+      break;
+      
+    default:
+      showToast('⚠️ Método de pago no válido');
+  }
+}
+
+// ============================================================
+//                    MODAL PAGO CON TARJETA
+// ============================================================
+function openModalTarjeta(total) {
+  const modal = $("#pos-modal-tarjeta");
+  if (!modal) return;
+  
+  // Mostrar el total
+  const cuotaTotal = $("#cuota-total");
+  if (cuotaTotal) cuotaTotal.textContent = `$${total.toFixed(2)}`;
+  
+  // Reset del formulario
+  const form = $("#form-pago-tarjeta");
+  if (form) form.reset();
+  
+  // Reset preview de tarjeta
+  $("#preview-numero").textContent = '•••• •••• •••• ••••';
+  $("#preview-nombre").textContent = 'NOMBRE DEL TITULAR';
+  $("#preview-vence").textContent = 'MM/AA';
+  
+  // Ocultar cuota mensual inicialmente
+  const cuotaMensualContainer = $("#cuota-mensual-container");
+  if (cuotaMensualContainer) cuotaMensualContainer.style.display = 'none';
+  
+  modal.classList.add('active');
+}
+
+function closeModalTarjeta() {
+  const modal = $("#pos-modal-tarjeta");
+  if (modal) modal.classList.remove('active');
+}
+
+function updateCuotasInfo() {
+  const tipoPago = $("#tipo-pago-tarjeta")?.value;
+  const total = window.currentInvoiceTotal || 0;
+  const cuotaMensualContainer = $("#cuota-mensual-container");
+  const cuotaMensual = $("#cuota-mensual");
+  const cuotaTotal = $("#cuota-total");
+  
+  // Tasas de interés simuladas
+  const tasas = {
+    'contado': { cuotas: 1, interes: 0 },
+    'diferido_3': { cuotas: 3, interes: 0.05 },
+    'diferido_6': { cuotas: 6, interes: 0.08 },
+    'diferido_9': { cuotas: 9, interes: 0.12 },
+    'diferido_12': { cuotas: 12, interes: 0.16 },
+    'sin_interes_3': { cuotas: 3, interes: 0 },
+    'sin_interes_6': { cuotas: 6, interes: 0 }
+  };
+  
+  const config = tasas[tipoPago] || tasas['contado'];
+  const totalConInteres = total * (1 + config.interes);
+  
+  if (cuotaTotal) cuotaTotal.textContent = `$${totalConInteres.toFixed(2)}`;
+  
+  if (config.cuotas > 1) {
+    const mensual = totalConInteres / config.cuotas;
+    if (cuotaMensual) cuotaMensual.textContent = `$${mensual.toFixed(2)}`;
+    if (cuotaMensualContainer) cuotaMensualContainer.style.display = 'flex';
+  } else {
+    if (cuotaMensualContainer) cuotaMensualContainer.style.display = 'none';
+  }
+}
+
+function formatCardNumber(value) {
+  // Eliminar todo excepto números
+  const numbers = value.replace(/\D/g, '');
+  // Agrupar en bloques de 4
+  const groups = numbers.match(/.{1,4}/g) || [];
+  return groups.join(' ').substr(0, 19);
+}
+
+function formatExpiry(value) {
+  // Eliminar todo excepto números
+  const numbers = value.replace(/\D/g, '');
+  if (numbers.length >= 2) {
+    return numbers.substr(0, 2) + '/' + numbers.substr(2, 2);
+  }
+  return numbers;
+}
+
+function detectCardType(number) {
+  const patterns = {
+    visa: /^4/,
+    mastercard: /^5[1-5]/,
+    amex: /^3[47]/,
+    diners: /^3(?:0[0-5]|[68])/
+  };
+  
+  for (const [type, pattern] of Object.entries(patterns)) {
+    if (pattern.test(number)) return type;
+  }
+  return null;
+}
+
+function updateCardLogos(cardType) {
+  document.querySelectorAll('.logo-tarjeta').forEach(logo => {
+    logo.classList.remove('active');
+    if (cardType && logo.alt.toLowerCase().includes(cardType)) {
+      logo.classList.add('active');
+    }
+  });
+}
+
+// ============================================================
+//                    MODAL PAGO TRANSFERENCIA
+// ============================================================
+function openModalTransferencia(total) {
+  const modal = $("#pos-modal-transferencia");
+  if (!modal) return;
+  
+  // Mostrar el total a pagar
+  const totalEl = $("#total-a-pagar");
+  if (totalEl) totalEl.textContent = `$${total.toFixed(2)}`;
+  
+  // Pre-llenar el monto
+  const montoInput = $("#monto-transferencia");
+  if (montoInput) montoInput.value = total.toFixed(2);
+  
+  // Fecha de hoy
+  const fechaInput = $("#fecha-transferencia");
+  if (fechaInput) fechaInput.value = new Date().toISOString().split('T')[0];
+  
+  // Reset del formulario (excepto los valores pre-llenados)
+  const bancoOrigen = $("#banco-origen");
+  if (bancoOrigen) bancoOrigen.value = '';
+  
+  const numeroComprobante = $("#numero-comprobante");
+  if (numeroComprobante) numeroComprobante.value = '';
+  
+  const titularCuenta = $("#titular-cuenta");
+  if (titularCuenta) titularCuenta.value = currentClient.nombre || '';
+  
+  const observaciones = $("#observaciones-transferencia");
+  if (observaciones) observaciones.value = '';
+  
+  modal.classList.add('active');
+}
+
+function closeModalTransferencia() {
+  const modal = $("#pos-modal-transferencia");
+  if (modal) modal.classList.remove('active');
+}
+
+// ============================================================
+//                    PROCESAR PAGO
+// ============================================================
+async function processPayment(metodo, datosAdicionales = {}) {
   const generateBtn = $("#pos-generate-invoice");
   if (generateBtn) {
     generateBtn.disabled = true;
@@ -772,6 +952,7 @@ async function generateInvoice() {
     };
     
     console.log('📄 Generando factura:', invoiceData);
+    console.log('💳 Método de pago:', metodo, datosAdicionales);
     
     // Insertar factura
     const response = await fetch(`${API_URL}/api/facturas`, {
@@ -789,10 +970,30 @@ async function generateInvoice() {
     
     const result = await response.json();
     
+    // Registrar el pago
+    const pagoData = {
+      factura_id: result.data.id,
+      monto: total.toFixed(2),
+      forma_pago_id: metodo,
+      fecha_pago: new Date().toISOString(),
+      estado: 'completado',
+      referencia: datosAdicionales.referencia || null
+    };
+    
+    await fetch(`${API_URL}/api/pagos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(pagoData)
+    });
+    
     // Actualizar stock de productos
     for (const item of invoiceItems) {
       await updateProductStock(item.id, item.cantidad);
     }
+    
+    // Cerrar modales si están abiertos
+    closeModalTarjeta();
+    closeModalTransferencia();
     
     showToast('✅ Factura generada exitosamente');
     
@@ -994,6 +1195,167 @@ function setupEventListeners() {
   $("#pos-modal-new-client")?.addEventListener('click', (e) => {
     if (e.target.id === 'pos-modal-new-client') {
       closeNewClientModal();
+    }
+  });
+  
+  // ============================================================
+  //       EVENT LISTENERS - MODAL PAGO TARJETA
+  // ============================================================
+  
+  // Cerrar modal tarjeta
+  $("#modal-tarjeta-close")?.addEventListener('click', closeModalTarjeta);
+  $("#btn-cancelar-tarjeta")?.addEventListener('click', closeModalTarjeta);
+  
+  // Cerrar modal al hacer click fuera
+  $("#pos-modal-tarjeta")?.addEventListener('click', (e) => {
+    if (e.target.id === 'pos-modal-tarjeta') {
+      closeModalTarjeta();
+    }
+  });
+  
+  // Tipo de pago - actualizar cuotas
+  $("#tipo-pago-tarjeta")?.addEventListener('change', updateCuotasInfo);
+  
+  // Formatear número de tarjeta y actualizar preview
+  const numeroTarjeta = $("#numero-tarjeta");
+  if (numeroTarjeta) {
+    numeroTarjeta.addEventListener('input', (e) => {
+      e.target.value = formatCardNumber(e.target.value);
+      const preview = $("#preview-numero");
+      if (preview) {
+        const value = e.target.value || '•••• •••• •••• ••••';
+        preview.textContent = value.padEnd(19, '•').replace(/(.{4})/g, '$1 ').trim();
+      }
+      // Detectar tipo de tarjeta
+      const cardType = detectCardType(e.target.value.replace(/\s/g, ''));
+      updateCardLogos(cardType);
+    });
+  }
+  
+  // Nombre del titular - actualizar preview
+  const nombreTitular = $("#nombre-titular");
+  if (nombreTitular) {
+    nombreTitular.addEventListener('input', (e) => {
+      const preview = $("#preview-nombre");
+      if (preview) {
+        preview.textContent = e.target.value.toUpperCase() || 'NOMBRE DEL TITULAR';
+      }
+    });
+  }
+  
+  // Fecha de vencimiento - formatear y actualizar preview
+  const vencimientoTarjeta = $("#vencimiento-tarjeta");
+  if (vencimientoTarjeta) {
+    vencimientoTarjeta.addEventListener('input', (e) => {
+      e.target.value = formatExpiry(e.target.value);
+      const preview = $("#preview-vence");
+      if (preview) {
+        preview.textContent = e.target.value || 'MM/AA';
+      }
+    });
+  }
+  
+  // Submit formulario tarjeta
+  $("#form-pago-tarjeta")?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const tipoPago = formData.get('tipo_pago');
+    const numeroTarjeta = formData.get('numero_tarjeta');
+    
+    // Validación básica
+    if (numeroTarjeta.replace(/\s/g, '').length < 16) {
+      showToast('⚠️ Número de tarjeta inválido');
+      return;
+    }
+    
+    const btn = $("#btn-procesar-tarjeta");
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '⏳ Procesando...';
+    }
+    
+    // Simular procesamiento
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // Procesar el pago
+    await processPayment('tarjeta', {
+      tipo: tipoPago,
+      referencia: `TRJ-${Date.now()}`,
+      ultimos_digitos: numeroTarjeta.slice(-4)
+    });
+    
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '💳 Procesar Pago';
+    }
+  });
+  
+  // ============================================================
+  //       EVENT LISTENERS - MODAL PAGO TRANSFERENCIA
+  // ============================================================
+  
+  // Cerrar modal transferencia
+  $("#modal-transferencia-close")?.addEventListener('click', closeModalTransferencia);
+  $("#btn-cancelar-transferencia")?.addEventListener('click', closeModalTransferencia);
+  
+  // Cerrar modal al hacer click fuera
+  $("#pos-modal-transferencia")?.addEventListener('click', (e) => {
+    if (e.target.id === 'pos-modal-transferencia') {
+      closeModalTransferencia();
+    }
+  });
+  
+  // Submit formulario transferencia
+  $("#form-pago-transferencia")?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const bancoOrigen = formData.get('banco_origen');
+    const numeroComprobante = formData.get('numero_comprobante');
+    const monto = parseFloat(formData.get('monto_transferencia'));
+    const total = window.currentInvoiceTotal || 0;
+    
+    // Validaciones
+    if (!bancoOrigen) {
+      showToast('⚠️ Seleccione el banco de origen');
+      return;
+    }
+    
+    if (!numeroComprobante) {
+      showToast('⚠️ Ingrese el número de comprobante');
+      return;
+    }
+    
+    // Validar que el monto coincida (con tolerancia de 1%)
+    const diferencia = Math.abs(monto - total);
+    if (diferencia > total * 0.01) {
+      showToast(`⚠️ El monto no coincide con el total ($${total.toFixed(2)})`);
+      return;
+    }
+    
+    const btn = $("#btn-registrar-transferencia");
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '⏳ Verificando...';
+    }
+    
+    // Simular verificación
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Procesar el pago
+    await processPayment('transferencia', {
+      banco_origen: bancoOrigen,
+      numero_comprobante: numeroComprobante,
+      referencia: `TRF-${numeroComprobante}`,
+      fecha: formData.get('fecha_transferencia'),
+      titular: formData.get('titular_cuenta'),
+      observaciones: formData.get('observaciones')
+    });
+    
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '🏦 Registrar Pago';
     }
   });
 }
