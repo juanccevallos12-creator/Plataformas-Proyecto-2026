@@ -211,18 +211,26 @@ function renderInvoiceItems() {
     return;
   }
   
-  // Renderizar items en formato lista compacta estilo caja
+  // Renderizar items en formato lista con imagen - estilo caja profesional
   container.innerHTML = `
     <div class="pos-items-list">
       <div class="pos-items-header">
-        <span class="col-qty">Cant.</span>
-        <span class="col-name">Producto</span>
-        <span class="col-price">P.Unit</span>
-        <span class="col-subtotal">Subtotal</span>
-        <span class="col-actions"></span>
+        <span></span>
+        <span>Producto</span>
+        <span style="text-align:center">Cant.</span>
+        <span style="text-align:right">Subtotal</span>
+        <span></span>
       </div>
       ${invoiceItems.map((item, index) => `
         <div class="pos-item-row" data-index="${index}">
+          <div class="col-img">
+            <img src="${item.imagen || './assets/images/placeholder.jpg'}" 
+                 alt="${item.nombre}"
+                 onerror="this.src='./assets/images/placeholder.jpg'">
+          </div>
+          <div class="col-info">
+            <span class="item-name" title="${item.nombre}">${item.nombre}</span>
+          </div>
           <div class="col-qty">
             <div class="pos-qty-compact">
               <button class="btn-qty-sm btn-qty-minus" data-index="${index}">−</button>
@@ -230,10 +238,6 @@ function renderInvoiceItems() {
               <button class="btn-qty-sm btn-qty-plus" data-index="${index}">+</button>
             </div>
           </div>
-          <div class="col-name" title="${item.nombre}">
-            <span class="item-name">${item.nombre}</span>
-          </div>
-          <div class="col-price">$${item.precio.toFixed(2)}</div>
           <div class="col-subtotal">$${(item.cantidad * item.precio).toFixed(2)}</div>
           <div class="col-actions">
             <button class="btn-remove-sm" data-index="${index}" title="Eliminar">🗑️</button>
@@ -242,7 +246,7 @@ function renderInvoiceItems() {
       `).join('')}
     </div>
     <div class="pos-items-count">
-      📦 ${invoiceItems.length} producto(s) · ${invoiceItems.reduce((sum, item) => sum + item.cantidad, 0)} unidad(es)
+      📦 ${invoiceItems.length} producto(s) · ${invoiceItems.reduce((sum, item) => sum + item.cantidad, 0)} unidad(es) en la factura
     </div>
   `;
   
