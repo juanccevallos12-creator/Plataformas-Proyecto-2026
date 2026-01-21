@@ -5,6 +5,27 @@ import { $, showToast } from "../utils.js";
 import { getPaises } from "../api/paises.js";
 import { getCiudades } from "../api/ciudades.js";
 
+// Helper para fetch con autenticación
+function getAuthHeaders() {
+  const token = localStorage.getItem('net_token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` })
+  };
+}
+
+async function fetchWithAuth(url, options = {}) {
+  const headers = getAuthHeaders();
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...headers,
+      ...options.headers
+    }
+  });
+  return response;
+}
+
 // Estado del POS
 let currentClient = {
   id: 'CONSUMIDOR-FINAL',
@@ -782,8 +803,13 @@ async function generateInvoice() {
 //                    MODAL PAGO CON TARJETA
 // ============================================================
 function openModalTarjeta(total) {
+  console.log('🔵 Abriendo modal de tarjeta, total:', total);
   const modal = $("#pos-modal-tarjeta");
-  if (!modal) return;
+  console.log('🔵 Modal encontrado:', modal);
+  if (!modal) {
+    console.error('❌ No se encontró el modal de tarjeta');
+    return;
+  }
   
   // Mostrar el total
   const cuotaTotal = $("#cuota-total");
@@ -794,15 +820,20 @@ function openModalTarjeta(total) {
   if (form) form.reset();
   
   // Reset preview de tarjeta
-  $("#preview-numero").textContent = '•••• •••• •••• ••••';
-  $("#preview-nombre").textContent = 'NOMBRE DEL TITULAR';
-  $("#preview-vence").textContent = 'MM/AA';
+  const previewNumero = $("#preview-numero");
+  const previewNombre = $("#preview-nombre");
+  const previewVence = $("#preview-vence");
+  
+  if (previewNumero) previewNumero.textContent = '•••• •••• •••• ••••';
+  if (previewNombre) previewNombre.textContent = 'NOMBRE DEL TITULAR';
+  if (previewVence) previewVence.textContent = 'MM/AA';
   
   // Ocultar cuota mensual inicialmente
   const cuotaMensualContainer = $("#cuota-mensual-container");
   if (cuotaMensualContainer) cuotaMensualContainer.style.display = 'none';
   
   modal.classList.add('active');
+  console.log('✅ Modal de tarjeta abierto');
 }
 
 function closeModalTarjeta() {
@@ -886,8 +917,13 @@ function updateCardLogos(cardType) {
 //                    MODAL PAGO TRANSFERENCIA
 // ============================================================
 function openModalTransferencia(total) {
+  console.log('🟢 Abriendo modal de transferencia, total:', total);
   const modal = $("#pos-modal-transferencia");
-  if (!modal) return;
+  console.log('🟢 Modal encontrado:', modal);
+  if (!modal) {
+    console.error('❌ No se encontró el modal de transferencia');
+    return;
+  }
   
   // Mostrar el total a pagar
   const totalEl = $("#total-a-pagar");
@@ -915,6 +951,7 @@ function openModalTransferencia(total) {
   if (observaciones) observaciones.value = '';
   
   modal.classList.add('active');
+  console.log('✅ Modal de transferencia abierto');
 }
 
 function closeModalTransferencia() {
@@ -954,12 +991,9 @@ async function processPayment(metodo, datosAdicionales = {}) {
     console.log('📄 Generando factura:', invoiceData);
     console.log('💳 Método de pago:', metodo, datosAdicionales);
     
-    // Insertar factura
-    const response = await fetch(`${API_URL}/api/facturas`, {
+    // Insertar factura (con autenticación)
+    const response = await fetchWithAuth(`${API_URL}/api/facturas`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify(invoiceData)
     });
     
@@ -970,7 +1004,7 @@ async function processPayment(metodo, datosAdicionales = {}) {
     
     const result = await response.json();
     
-    // Registrar el pago
+    // Registrar el pago (con autenticación)
     const pagoData = {
       factura_id: result.data.id,
       monto: total.toFixed(2),
@@ -980,11 +1014,16 @@ async function processPayment(metodo, datosAdicionales = {}) {
       referencia: datosAdicionales.referencia || null
     };
     
-    await fetch(`${API_URL}/api/pagos`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(pagoData)
-    });
+    // Intentar registrar el pago (con autenticación)
+    try {
+      await fetchWithAuth(`${API_URL}/api/pagos`, {
+        method: 'POST',
+        body: JSON.stringify(pagoData)
+      });
+    } catch (pagoError) {
+      console.warn('⚠️ No se pudo registrar el pago:', pagoError);
+      // Continuar aunque falle el registro del pago
+    }
     
     // Actualizar stock de productos
     for (const item of invoiceItems) {
@@ -1019,17 +1058,17 @@ async function updateProductStock(productId, quantitySold) {
     const product = allProducts.find(p => p.id === productId);
     if (!product) return;
     
-    const newStock = product.stock - quantitySold;
+    const newStock = Math.max(0, product.stock - quantitySold);
     
-    await fetch(`${API_URL}/api/productos/${productId}`, {
+    await fetchWithAuth(`${API_URL}/api/productos/${productId}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({
         stock: newStock
       })
     });
+    
+    // Actualizar el stock en caché local
+    product.stock = newStock;
     
   } catch (error) {
     console.error('Error actualizando stock:', error);
